@@ -1,0 +1,14 @@
+{
+  "name": "dzsubek-agent-mp",
+  "description": "Custom plugins for Claude Code.",
+  "owner": {
+    "name": "dzsubek"
+  },
+  "plugins": [
+    {
+      "name": "break-down",
+      "source": "./plugins/break-down",
+      "description": "Break a specification into epics, then into implementation-ready stories, without dropping or inventing requirements."
+    }
+  ]
+}

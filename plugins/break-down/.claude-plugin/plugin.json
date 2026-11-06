@@ -1,0 +1,16 @@
+{
+  "name": "break-down",
+  "displayName": "Break Down",
+  "version": "0.1.0",
+  "description": "Break a specification into epics, then into implementation-ready stories, without dropping or inventing requirements.",
+  "author": {
+    "name": "dzsubek"
+  },
+  "keywords": [
+    "epics",
+    "user-stories",
+    "requirements",
+    "backlog",
+    "decomposition"
+  ]
+}
