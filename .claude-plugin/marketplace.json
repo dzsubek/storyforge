@@ -1,8 +1,8 @@
 {
-  "name": "dzsubek-agent-mp",
+  "name": "dzsubek-hu-agent-mp",
   "description": "Custom plugins for Claude Code.",
   "owner": {
-    "name": "dzsubek"
+    "name": "dzsubek-hu"
   },
   "plugins": [
     {

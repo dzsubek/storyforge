@@ -1,4 +1,4 @@
-# dzsubek-agent-mp
+# dzsubek-hu-agent-mp
 
 A Claude Code marketplace for custom plugins.
 
@@ -7,7 +7,7 @@ A Claude Code marketplace for custom plugins.
 Add the marketplace from GitHub:
 
 ```bash
-claude plugin marketplace add dzsubek/agent-mp
+claude plugin marketplace add dzsubek-hu/agent-mp
 ```
 
 From a local checkout, use the directory instead:
@@ -19,7 +19,7 @@ claude plugin marketplace add ./
 Install a plugin by its name and this marketplace:
 
 ```bash
-claude plugin install <plugin>@dzsubek-agent-mp
+claude plugin install <plugin>@dzsubek-hu-agent-mp
 ```
 
 ## Plugins
@@ -29,7 +29,7 @@ claude plugin install <plugin>@dzsubek-agent-mp
 Break a specification into epics, then into implementation-ready stories, without dropping or inventing requirements.
 
 ```bash
-claude plugin install break-down@dzsubek-agent-mp
+claude plugin install break-down@dzsubek-hu-agent-mp
 ```
 
 | Command | What it does |
