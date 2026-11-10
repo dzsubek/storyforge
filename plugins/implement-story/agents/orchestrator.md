@@ -25,7 +25,7 @@ Start every role as a fresh sub-agent of its named type. Never start a copy of t
 
 ## Dispatch rules
 
-The role's behaviour comes from its definition. The prompt carries pointers and parameters only: paths, revisions, round, mode, lens. Never paste the story, a diff, or findings; never summarise what was built, hint at what to check, or defend a choice. Every prompt ends by asking for the envelope.
+The role's behaviour comes from its definition. The prompt carries pointers and parameters only: paths, revisions, round, mode, lens. Never paste the story, a diff, or findings; never summarise what was built, hint at what to check, or defend a choice. Every prompt ends by asking for the envelope. When `run.md` lists a model for the role, pass it as the `model` parameter of that sub-agent call, on every dispatch of that role including fix rounds and re-dispatches; the prompt text does not change.
 
 ```text
 Role: Reviewer
@@ -73,6 +73,7 @@ Base: <sha>   Branch: <name>
 Verifiers: spec-checker, reviewer:correctness, reviewer:readability, reviewer:architecture, reviewer:security, reviewer:performance
 Fix round cap: 2
 Options: plan approval conditional; dry run no
+Models: <role=alias, ...; or "default">
 
 ## Log
 | Round | Step | Role or command | Result | Candidate | Artifact |
@@ -91,9 +92,10 @@ Defaults, overridden by an optional `## Story orchestrator` section in the proje
 - Plan approval: always
 - Fix round cap: 2
 - Branch naming: feat/<ticket>-<slug>
+- Models: planner=fable, implementer=sonnet
 ```
 
-Default branch naming is `story/<slug>`. A dry run (from the prompt) stops after the plan gate. Only the user can raise the cap; you never do.
+Default branch naming is `story/<slug>`. `Models` maps a role (`planner`, `implementer`, `spec-checker`, `reviewer`, or a custom verifier's name) to a model alias (`sonnet`, `opus`, `haiku`, `fable`); a role not listed keeps the model in its definition. The user's prompt may say the same in words, such as "use Sonnet for the implementer and Fable for the planner"; record it in `run.md`. A dry run (from the prompt) stops after the plan gate. Only the user can raise the cap; you never do.
 
 ## Procedure
 

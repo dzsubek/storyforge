@@ -17,6 +17,7 @@ Add requirements for this run in the same prompt, such as "do not add dependenci
 - **Dry run.** Stop after the plan.
 - **Plan approval.** Always stop for approval at the plan gate.
 - **Extra verifiers**, skipped lenses, or a different fix-round cap for this run.
+- **Models per role**, such as "Use Sonnet for the implementer and Fable for the planner." Roles you do not mention keep the model in their definition (`inherit`, so the session's model). Also settable as `- Models: planner=fable, implementer=sonnet` in the project configuration below.
 
 To resume an interrupted run, start the orchestrator again with no task, or with "resume".
 
@@ -60,6 +61,7 @@ You can add an optional section to the project's `AGENTS.md` or `CLAUDE.md`. Eve
 - Plan approval: always
 - Fix round cap: 2
 - Branch naming: feat/<ticket>-<slug>
+- Models: planner=fable, implementer=sonnet
 ```
 
 The lenses are `correctness`, `readability`, `architecture`, `security`, and `performance`. All roles read the project's own instruction files for conventions and commands, so those files should name the exact test, lint, and build commands.
