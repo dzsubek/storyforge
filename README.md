@@ -39,6 +39,20 @@ claude plugin install break-down@dzsubek-hu-agent-mp
 
 Run epic-creator first when the input is a whole specification. Run story-creator when you already have one epic or a brief. Where the results are written follows the project's `AGENTS.md` or `CLAUDE.md`. The skills do not assume a tracker.
 
+### implement-story
+
+Take one story-sized task from description to a reviewed, verified local branch. A coordinator plans the work, has one implementer build it test-first, runs the project's checks itself, and has independent verifiers check the result blind. A spec checker goes criterion by criterion, and five reviewers each cover one lens: correctness, readability, architecture, security, or performance.
+
+```bash
+claude plugin install implement-story@dzsubek-hu-agent-mp
+```
+
+```bash
+claude --agent implement-story:orchestrator "<task description or story link>"
+```
+
+A run ends with local commits and one outcome: `READY_FOR_REVIEW`, `NEEDS_HUMAN`, or `BLOCKED`. Nothing is pushed. Project settings, custom verifiers, and permissions are covered in the [plugin README](plugins/implement-story/README.md).
+
 ## Layout
 
 ```text
