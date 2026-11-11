@@ -9,6 +9,11 @@
       "name": "break-down",
       "source": "./plugins/break-down",
       "description": "Break a specification into epics, then into implementation-ready stories, without dropping or inventing requirements."
+    },
+    {
+      "name": "implement-story",
+      "source": "./plugins/implement-story",
+      "description": "Take one story-sized task from description to a reviewed, verified local branch: plan, implement test-first, check, and verify blind with independent reviewers."
     }
   ]
 }
