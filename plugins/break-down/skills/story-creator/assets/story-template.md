@@ -22,6 +22,8 @@ Spike: Question: <...>. Evidence to gather: <...>. Timebox: <...>. Decision info
 
 | REQ | Requirement | Modality | Source |
 | REQ-006 | Members can download annual statements as PDF | can | DOC-1 §3 ¶1 |
+| REQ-015 | Sessions time out after 30 minutes of inactivity | (must) | DOC-1 §5 ¶1 |
+<Modality is one of must, must not, should, should not, may, or can, in parentheses when inferred. Never the sentence's verb or a provenance label.>
 
 ## Scope
 **In:** <bullets>

@@ -16,6 +16,7 @@ Use when the input is too small to decompose into epics (Step 5). The brief carr
 
 ## Requirements
 | ID | Requirement | Type | Modality | Actors | Source | Status |
+<Modality is one of must, must not, should, should not, may, or can, in parentheses when inferred. Never the sentence's verb.>
 
 ## Constraints and non-functional requirements
 <Each with its REQ ID; "none stated" if applicable.>

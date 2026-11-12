@@ -15,26 +15,28 @@ A deliberately small, invented specification run through the workflow, to show t
 
 | ID | Requirement | Type | Modality | Actors | Source | Status |
 |---|---|---|---|---|---|---|
-| REQ-001 | Members can update their email address | functional | can (should) | member | DOC-1 §2 ¶1 | documented |
+| REQ-001 | Members can update their email address | functional | can | member | DOC-1 §2 ¶1 | documented |
 | REQ-002 | Members can update their postal address | functional | can | member | DOC-1 §2 ¶1 | documented |
-| REQ-003 | Email change requires confirmation via link sent to the new address | functional | requires (must) | member, system | DOC-1 §2 ¶1 | documented; relates_to REQ-001 |
-| REQ-004 | Confirmation link expires after 24 hours | constraint | must | system | DOC-1 §2 ¶1 | documented; relates_to REQ-003 |
+| REQ-003 | Email change requires confirmation via link sent to the new address | functional | must | member, system | DOC-1 §2 ¶1 | documented; relates_to REQ-001 |
+| REQ-004 | Confirmation link expires after 24 hours | constraint | (must) | system | DOC-1 §2 ¶1 | documented; relates_to REQ-003 |
 | REQ-005 | Member must not change email to one used by another account | constraint | must not | member | DOC-1 §2 ¶2 | documented |
 | REQ-006 | Members can download annual statements as PDF | functional | can | member | DOC-1 §3 ¶1 | documented |
 | REQ-007 | Statements for the last 7 years must be available | data | must | system | DOC-1 §3 ¶1 | documented |
 | REQ-008 | Downloads should be fast | NFR | should | system | DOC-1 §3 ¶1 | documented; flag: unquantified |
 | REQ-009 | Members can open a support ticket from the portal | functional | can | member | DOC-1 §4 ¶1 | documented |
-| REQ-010 | Tickets are routed to the regional team | functional | are (must) | system | DOC-1 §4 ¶1 | documented; flag: "regional" undefined |
+| REQ-010 | Tickets are routed to the regional team | functional | (must) | system | DOC-1 §4 ¶1 | documented; flag: "regional" undefined |
 | REQ-011 | Agents can reply to tickets | functional | can | agent | DOC-1 §4 ¶1 | documented |
 | REQ-012 | Members see replies in the portal | functional | (must) | member | DOC-1 §4 ¶1 | documented |
 | REQ-013 | Members receive replies by email | functional | (must) | member | DOC-1 §4 ¶1 | documented; relates_to REQ-012 |
 | REQ-014 | All portal actions require an authenticated session | constraint | must | all | DOC-1 §5 ¶1 | documented |
-| REQ-015 | Sessions time out after 30 minutes of inactivity | constraint | must | system | DOC-1 §5 ¶1 | documented |
+| REQ-015 | Sessions time out after 30 minutes of inactivity | constraint | (must) | system | DOC-1 §5 ¶1 | documented |
 | REQ-016 | Admins can view any member's account, read only | functional | can | admin | DOC-1 §5 ¶1 | documented |
 | REQ-017 | Reporting requirements | — | — | — | DOC-1 §6 | question |
-| REQ-018 | A member's region must be known to route tickets | data | must | system | derived from REQ-010 | derived |
+| REQ-018 | A member's region is known when a ticket is routed | data | (must) | system | derived from REQ-010 | derived |
 
 Note what was kept: the 24-hour and 7-year quantities, the prohibition in REQ-005, the split of REQ-012/013, the derived REQ-018 with its parent, and the flags on REQ-008 and REQ-010.
+
+Note the Modality column. It holds only the six keywords. REQ-005, REQ-007 and REQ-008 carry the source's own word. REQ-003 and REQ-014 say "require", which states the obligation outright, so they are `must` without parentheses. REQ-004, REQ-010, REQ-012, REQ-013 and REQ-015 are plain statements of behaviour ("expires", "are routed", "see", "time out"), so the strength is inferred and written `(must)`; the verb itself never goes in the column. REQ-018 is derived, so it is inferred too. REQ-017 has no statement yet and gets `—`.
 
 ## Step 4: Reconciliation findings
 

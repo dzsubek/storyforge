@@ -29,7 +29,11 @@ Capture these as written, because each one changes what "done" means:
 - **Quantities and units**: counts, limits, durations, percentages, currencies. Never round or convert.
 - **Prohibitions**: "must not", "never", "is not permitted". These are the easiest to lose during regrouping.
 - **Exceptions and fallbacks**: "except", "otherwise", "in case of failure".
-- **Modality**: must/shall, should, may, must not. A document's "should" is weaker than its "must"; do not normalise them.
+- **Modality**: the strength of the commitment, recorded with the six keywords from SKILL.md ("Modality values"): `must`, `must not`, `should`, `should not`, `may`, `can`, parenthesised when inferred. A document's "should" is weaker than its "must"; do not normalise them. Edge cases:
+  - "Will" and present-tense descriptions ("the system will send", "the system sends") carry no modal word. Both are `(must)`.
+  - A table row or field list that states an obligation without a sentence ("Max length: 80") is `(must)`.
+  - When a section heading or lead-in sets the strength for everything under it ("Nice to have:", "The following are mandatory:"), the items inherit it as an inferred value, `(should)` or `(must)`, because the word is not in the item's own sentence.
+  - When two keywords fit one sentence, it holds two obligations. Split the row.
 
 ## Splitting compound statements
 

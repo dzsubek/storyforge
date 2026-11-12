@@ -46,17 +46,45 @@ Read the whole input. For long documents go section by section and append to one
 
 ```
 | ID | Requirement | Type | Modality | Actors | Source | Status |
-| REQ-001 | Shoppers can filter results by brand | functional | must | shopper | DOC-1 §3.2 ¶2 | documented |
+| REQ-001 | Shoppers can filter results by brand | functional | can | shopper | DOC-1 §3.2 ¶2 | documented |
+| REQ-002 | Filtered results are listed by price, lowest first | functional | (must) | system | DOC-1 §3.2 ¶3 | documented |
 ```
 
 - **Type**: functional, NFR, constraint, interface, data, compliance, process.
-- **Modality**: keep the source's word (must/shall, should, may, must not, can). Never upgrade a suggestion to an obligation or soften a prohibition. When a bare statement implies an obligation ("notifications are listed newest first"), write the inferred modality in parentheses, `(must)`, so readers can see it was inferred.
+- **Modality**: how strongly the source commits to the requirement, as one of the six keywords below. See "Modality values".
 - **Source**: document, section or heading path, and paragraph, page, or table row, precise enough that a reader can find the sentence.
 - **Status**: `documented` (grounded in text), `derived` (a necessary consequence; record the rationale and parent REQ), `question` (a gap that needs an answer), `recommendation` (an optional suggestion in the source).
 
 Split compound sentences into separate rows and link them (`relates_to: REQ-004`) so the relationship survives. Keep quantities, units, actors, conditions and exceptions verbatim. Do not invent requirements; do derive necessary work, labelled as such.
 
 For documents longer than a few pages, containing tables, appendices, or multiple versions, or when the initial skim surfaces a conflict, read `references/extraction-rules.md` first. If the ledger will not fit comfortably in context, write it to a working file (location per project convention, otherwise ask) and report processed and unprocessed ranges if you are interrupted, so a partial result is never mistaken for a complete one.
+
+### Modality values
+
+The Modality column exists so a reader can tell obligations from suggestions by scanning one column. That only works when every cell holds one of six keywords:
+
+| Keyword | Use when the source says |
+|---|---|
+| `must` | must, shall, has to, needs to, requires, is required |
+| `must not` | must not, shall not, may not, cannot, is not allowed, is prohibited |
+| `should` | should, ought to, is recommended |
+| `should not` | should not, is discouraged |
+| `may` | may, is allowed to, is optional |
+| `can` | can, is able to |
+
+Most specification sentences contain none of these words. Then infer the strength and write the keyword in parentheses, so readers can see it was inferred rather than stated:
+
+- A bare statement of behaviour ("notifications are listed newest first", "the link opens the sign-in tab") is `(must)`.
+- A bare absence or prohibition ("the start screen has no sign-in panel", "the choice is never asked again") is `(must not)`.
+- Hedged wording ("ideally", "preferably", "where possible") is `(should)`; "optionally" is `(may)`.
+
+Three rules keep the column clean:
+
+- The cell never holds the sentence's own verb. "Opens", "is", "shows", "has", "there is no" describe the behaviour, which is already in the Requirement column; they say nothing about strength. Write `(must)` or `(must not)`, not `opens` or `opens (must)`.
+- The cell never holds provenance. Whether a requirement was decided by the user, assumed, or derived belongs in Source and Status. A `derived` row is inferred by definition, so its keyword is always parenthesised. A row that rests on a user decision takes the strength the decision was stated with, or `(must)` if it was stated flatly. A `question` row that has no statement yet gets `—`.
+- One keyword per cell. If a sentence seems to need two ("always shown; nothing has to be accepted"), it is a compound and needs two rows.
+
+Never upgrade a suggestion to an obligation or soften a prohibition. The keywords stay in English even when the source or the output is in another language; map the source's modal word to the matching keyword.
 
 ## Step 4: Reconcile
 
@@ -97,7 +125,8 @@ Coverage is computed from the ledger, never asserted. Before presenting, verify:
 - Every REQ maps to at least one epic, or carries an explicit disposition (`question`, `deferred`, `excluded`) with a reason the user can approve.
 - Every epic lists its REQ IDs and no REQ ID appears without being in the ledger.
 - Each epic reads as one outcome, not a layer or a document section.
-- Modalities in epics match the ledger.
+- Every Modality cell, in the ledger and in each epic's table, is one of the six keywords, parenthesised when inferred, or `—` on a `question` row. Scan the column for verbs, provenance labels, and double values, and fix them before presenting.
+- Epic tables carry each requirement's modality unchanged from the ledger.
 - Required NFRs are attached somewhere, not deferred.
 - Every contradiction, consequential question, assumption, and unreadable input appears in the findings register.
 - No secrets, credentials, or unnecessary personal data are carried into the output.
@@ -126,6 +155,7 @@ Categories: Missing information, Ambiguity, Contradiction, Dependency, Assumptio
 - Document structure reflects authorship, not scope. Two headings often describe one capability, and one heading often hides three.
 - A requirement you reworded is a requirement you may have changed. Quote or stay close to the source wording in the ledger; paraphrase only in epic summaries.
 - "Should" and "must" are different promises. Preserve them.
+- A sentence without a modal word still has a modality, and it is not the sentence's verb. "The screen shows the score" is `(must)`, never `shows`.
 - Flagging a question is not the same as answering it. Never embed an unconfirmed consequential assumption in an epic as if it were decided.
 - Coverage of 100 % means every requirement is accounted for, not that everything is planned. Report `question`, `deferred`, and `excluded` counts separately.
 - Small inputs deserve a brief, not a forced hierarchy.

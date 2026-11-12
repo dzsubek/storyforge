@@ -1,7 +1,7 @@
 {
   "name": "break-down",
   "displayName": "Break Down",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Break a specification into epics, then into implementation-ready stories, without dropping or inventing requirements.",
   "author": {
     "name": "dzsubek"

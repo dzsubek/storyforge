@@ -19,6 +19,8 @@ Default shape for one epic. Use the project's own template when it has one; othe
 ## Requirements covered
 | REQ | Requirement (short) | Modality | Source |
 | REQ-012 | ... | must | DOC-1 §3.2 |
+| REQ-013 | ... | (must) | DOC-1 §3.2 |
+<Modality is copied unchanged from the ledger: must, must not, should, should not, may, or can, in parentheses when inferred. Never the sentence's verb.>
 
 ## Constraints and non-functional requirements
 <NFRs, compliance, or policy obligations that bind this epic, each with its REQ ID. Write "none stated in source" if that is the case.>
