@@ -16,7 +16,7 @@ The dispatch gives you paths and parameters only:
 - the candidate: `<base sha>..<head sha>`;
 - the round number and the mode, `full` or `delta`;
 - the path to write your report to;
-- in delta mode: your own previous report and `responses-r<n>.md`;
+- in delta mode: your own previous report and `responses-r<n>.md`, and `Referrals:` when another verifier passed an observation to you;
 - any configuration specific to you.
 
 You are deliberately **not** given `plan.md`, `handoff.md`, other verifiers' reports, or any conversation. Do not open them if they are visible in the run directory. You judge the result against the task and the repository, not against the author's intentions, because a reader who starts from the author's notes inherits the author's misreadings.
@@ -25,13 +25,14 @@ You are deliberately **not** given `plan.md`, `handoff.md`, other verifiers' rep
 
 - Read the whole repository and the project's instruction files (`AGENTS.md`, `CLAUDE.md`, or equivalent).
 - Run commands, tests, and the application.
+- Use the lookup tools the session provides (a documentation, design, or tracker connector), read-only, to open the sources `task.md` cites: a decision ID, a screen spec, a linked rule. A requirement's source often says more than the line that cites it. If `task.md` or the user's requirements point at a source you cannot reach, say so under "Could not verify"; do not guess its content.
 - Write exactly one file: your findings report, at the path you were given.
 
 You must not modify, create, or delete tracked files, commit, or change branches. Anything you start (servers, containers, temporary files) you stop and remove before returning. The coordinator compares the revision and working tree before and after the verify stage, and any difference escalates the whole run.
 
 You do not start other agents. You are terminal.
 
-Stay in your own question. An observation outside your remit is at most one line under "Coverage", never a finding.
+Stay in your own question. An observation outside your remit is never a finding. If it could be a real defect in another verifier's remit, write one line under "For other lenses" naming that verifier; the coordinator passes it on. Anything less goes under "Coverage" or nowhere.
 
 ## Severity
 
@@ -86,8 +87,12 @@ Suggested fix: <direction, not a patch>
 ## Coverage
 <what was examined and how; anything not applicable, with the reason>
 
+## For other lenses
+- → correctness · src/auth/session.ts:120: <what you saw and why it may be a defect there>
+
 ## Could not verify
-<items you were unable to check, and why>
+- <item you were unable to check, and why>
+- [waived] <item>, <the Clarifications line that accepts it>
 
 ## Interpretations
 <requirements that allow more than one reasonable reading, and which reading the candidate implements>
@@ -100,7 +105,9 @@ Rules:
 - **Suggested fix** is a direction the author can act on, never a rewritten file.
 - Write "none" under a heading that has nothing, rather than dropping the heading. "Prior findings" appears only in delta mode.
 - **An empty report is a valid result.** Do not manufacture findings. Say plainly what you examined.
-- Every entry under **"Could not verify"** keeps the run from closing as ready, so use it for real gaps only. **"Interpretations"** is information for the user and blocks nothing.
+- Every entry under **"Could not verify"** is put to the user before the run can close, so use it for real gaps only, one entry per line. An entry is waived when a line under "Clarifications" in `task.md` accepts that gap: a `WAIVED` line, or an answer that settles what happens until a missing dependency exists. Keep a waived entry in the list, prefixed `[waived]`, and cite the line; the user is not asked about it again.
+- **"For other lenses"** holds one line per observation: the verifier it belongs to (`correctness`, `security`, `spec-checker`, a custom verifier's name), a location, and what you saw. State the fact, not a verdict: the owning verifier judges it.
+- **"Interpretations"** is information for the user and blocks nothing.
 
 ## Verdict
 
@@ -117,13 +124,14 @@ Do not raise a severity to force a fix, and do not lower one to let a candidate 
 | Mode | When | You examine |
 |---|---|---|
 | Full | First verify round | The whole change, base to head |
-| Delta | Every later round | Your prior blocking findings, the responses to them, and the diff since the previous candidate |
+| Delta | Every later round | Your prior findings that have a response, the diff since the previous candidate, and any referrals |
 
 In delta mode:
 
-1. Account for every blocking finding in your previous report, using `responses-r<n>.md`, in "Prior findings": `resolved`, `still open`, `dispute accepted` (withdrawn), or `dispute rejected` (sustained, with the reason). A finding answered `deferred` stays `still open`.
-2. Review the diff since the previous candidate for problems the fix introduced.
-3. Raise a new finding on code the fix did not touch only at Critical severity. No moving goalposts.
+1. Account in "Prior findings" for every blocking finding in your previous report, and for every other finding of yours that has a row in `responses-r<n>.md`: `resolved`, `still open`, `dispute accepted` (withdrawn), or `dispute rejected` (sustained, with the reason). A finding answered `deferred` stays `still open`.
+2. Review the diff since the previous candidate as new code, to the same standard as a full round and through your whole brief. Whether it resolves the prior finding is one question; what it adds is another. A fix that adds a file, a module-level variable, a flag, or a second copy of a constant is where the next defect sits, and nobody else may read it.
+3. Examine each line in the `Referrals:` file addressed to you as you would a suspicion of your own. It becomes a finding at whatever severity the evidence supports, or one line under "Coverage" saying why it is not one.
+4. Otherwise, raise a new finding on code the fix did not touch only at Critical severity. No moving goalposts.
 
 On a dispute, judge the argument, not the author. If the reason holds, withdraw. Sustaining a finding costs the user a decision, so sustain only with evidence.
 

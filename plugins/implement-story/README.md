@@ -1,6 +1,6 @@
 # Implement Story
 
-Take one story-sized task from description to a reviewed, verified change on a local branch. A coordinator runs a fixed procedure. A planner writes a short plan, one implementer builds the change test-first, the coordinator runs the project's checks itself, and then independent verifiers check the result blind: a spec checker goes criterion by criterion, and five lens reviewers each look for one kind of defect. Serious findings go back to a fresh implementer for at most two fix rounds.
+Take one story-sized task from description to a reviewed, verified change on a local branch. A coordinator runs a fixed procedure. A planner writes a short plan in slices, a fresh implementer builds each slice test-first, the coordinator runs the project's checks itself, and then independent verifiers check the result blind: a spec checker goes criterion by criterion, and four lens reviewers each look for one kind of defect. Serious findings go back to a fresh implementer for at most two fix rounds, and the verifiers whose findings were answered check the fixes.
 
 ```bash
 claude plugin install implement-story@dzsubek-hu-agent-mp
@@ -16,7 +16,7 @@ Add requirements for this run in the same prompt, such as "do not add dependenci
 
 - **Dry run.** Stop after the plan.
 - **Plan approval.** Always stop for approval at the plan gate.
-- **Extra verifiers**, skipped lenses, or a different fix-round cap for this run.
+- **Extra verifiers**, extra or skipped lenses, or a different fix-round cap for this run.
 - **Models per role**, such as "Use Sonnet for the implementer and Fable for the planner." Roles you do not mention keep the model in their definition (`inherit`, so the session's model). Also settable as `- Models: planner=fable, implementer=sonnet` in the project configuration below.
 
 To resume an interrupted run, start the orchestrator again with no task, or with "resume".
@@ -28,23 +28,28 @@ To resume an interrupted run, start the orchestrator again with no task, or with
 | Intake | Orchestrator | `task.md`: the task word for word, with numbered acceptance criteria |
 | Plan | Planner | `plan.md`: approach, files, how each criterion will be shown, check commands, risks |
 | Plan gate | You, only if needed | Answers to open questions, approval of inferred criteria, acknowledgement of risks |
-| Implement | Implementer | Local commits and `handoff.md` |
+| Implement | One fresh implementer per plan slice, in order | Local commits and `handoff.md` |
 | Checks | Orchestrator | The plan's check commands, judged by exit codes only |
-| Verify | Spec checker, five reviewers, custom verifiers, in parallel | One findings report each |
+| Verify | Spec checker, four reviewers, custom verifiers, in parallel | One findings report each |
 | Fix | Fresh implementer, at most twice | New commits and a response to every blocking finding |
+| Re-verify | Spec checker, correctness reviewer, and every verifier whose finding was answered | Each fix read as new code |
+| Gaps | You, once, after the fixes | A waiver or a stop for each thing no verifier could check |
 | Close | Orchestrator | Final report |
 
-The plan gate stops only when the plan has open questions, proposes acceptance criteria that the story did not state, or touches a risk area (auth, payments, data migration or deletion, public contracts, anything irreversible). Otherwise you get a one-line notice and the run continues.
+The plan gate stops only when the plan has open questions, proposes acceptance criteria that the story did not state, or touches a risk area (auth, payments, data migration or deletion, public contracts, anything irreversible). Otherwise you get a one-line notice and the run continues. A criterion whose target another story will build (a screen or service that does not exist yet) is always an open question: you decide what the control does in the meantime.
+
+After a report you can ask for non-blocking findings to be fixed ("fix the minors"). That runs as a normal fix round and counts against the cap.
 
 ## Outcomes
 
 | Outcome | Meaning |
 |---|---|
 | `READY_FOR_REVIEW` | Checks pass, every criterion is met with evidence, and no Critical or Major finding is open. Review the branch and merge it yourself. |
-| `NEEDS_HUMAN` | A decision is yours: a disputed finding, exhausted fix rounds, an ambiguity, or something no verifier could check. The report lists the options. |
+| `READY_WITH_EXCEPTIONS` | As above, except for gaps you waived: a criterion or check that could not be verified here, such as a target screen that does not exist yet or a device nobody could run. The report lists the exceptions first. |
+| `NEEDS_HUMAN` | A decision is yours: a disputed finding, exhausted fix rounds, an ambiguity, or an unverified item you did not waive. The report lists the options. |
 | `BLOCKED` | Information, access, or a prerequisite is missing, or the task is larger than one story. |
 
-A skipped check, a verifier that failed to run, or a criterion nobody could verify is never counted as a pass.
+A skipped check, a verifier that failed to run, or a criterion nobody could verify is never counted as a pass. Only you can waive one, and you are asked once, after the fix rounds, not before them.
 
 ## Run artifacts
 
@@ -57,14 +62,17 @@ You can add an optional section to the project's `AGENTS.md` or `CLAUDE.md`. Eve
 ```markdown
 ## Story orchestrator
 - Extra verifiers: ui-verifier
-- Skip lenses: performance
+- Extra lenses: performance
+- Skip lenses: readability
 - Plan approval: always
 - Fix round cap: 2
 - Branch naming: feat/<ticket>-<slug>
 - Models: planner=fable, implementer=sonnet
 ```
 
-The lenses are `correctness`, `readability`, `architecture`, `security`, and `performance`. All roles read the project's own instruction files for conventions and commands, so those files should name the exact test, lint, and build commands.
+The default lenses are `correctness`, `readability`, `architecture`, and `security`. `performance` is off by default, because most stories have no performance surface and the correctness lens covers the performance defects that do occur; add it under "Extra lenses" for work where scale matters. All roles read the project's own instruction files for conventions and commands, so those files should name the exact test, lint, and build commands.
+
+The planner and the verifiers can use the lookup tools your session provides, such as a documentation or tracker connector, to open the sources a story cites. Name the connector in the prompt or the project instructions when requirements live outside the repository.
 
 ## Writing a custom verifier
 
@@ -74,7 +82,7 @@ A concern the built-in lenses do not cover, such as accessibility or a UI check,
 ---
 name: ui-verifier
 description: Starts the app and checks the screens a story changes. Started by the implement-story orchestrator.
-tools: Read, Grep, Glob, Bash, Write
+disallowedTools: Edit, NotebookEdit, Agent
 skills: verifier-contract
 ---
 
@@ -82,7 +90,7 @@ Your question: <what this verifier checks>. Finding prefix: `UI`.
 <method>
 ```
 
-Preloading `verifier-contract` gives it the shared rules: what it receives, that it writes only its own report and leaves tracked files untouched, the report format, the severity scale with its evidence rules, delta mode, and the verdict envelope. Put it in `.claude/agents/` and list it under "Extra verifiers".
+Preloading `verifier-contract` gives it the shared rules: what it receives, that it writes only its own report and leaves tracked files untouched, the report format, the severity scale with its evidence rules, delta mode, how to pass an observation to another verifier, and the verdict envelope. A tool denylist, as above, keeps the session's lookup and device tools available to it; an allowlist (`tools:`) would remove them. Put it in `.claude/agents/` and list it under "Extra verifiers".
 
 ## Permissions
 
@@ -96,7 +104,7 @@ Roles must start with a fresh context. If your settings let the main session for
 
 ## What it will not do
 
-It does not push, open pull requests, merge, rebase, reset, or delete branches. It does not split epics or large specifications into stories; use the `break-down` plugin for that. It does not run unattended or in batches, and it never runs more than one implementer at a time.
+It does not push, open pull requests, merge, rebase, reset, or delete branches. It does not split epics or large specifications into stories; use the `break-down` plugin for that. It does not run unattended or in batches, and it never runs more than one implementer at a time: the slices of a plan are built one after another.
 
 ## Porting to another host
 
@@ -105,8 +113,8 @@ Role bodies are written against capabilities, not tools. Only the frontmatter is
 | Agent | Claude Code frontmatter | Capability it stands for |
 |---|---|---|
 | `orchestrator` | inherits all tools except `Edit`, `Write`, `NotebookEdit` | Sub-agents, shell, asking the user, and whatever tracker access the session has. It writes run files through the shell. |
-| `planner` | `Read, Grep, Glob, Bash, Write` | Read, search, shell, and writing its one file. It cannot start agents. |
+| `planner` | inherits all tools except `Edit`, `NotebookEdit`, `Agent` | Read, search, shell, the session's lookup tools, and writing its one file. It cannot start agents. |
 | `implementer` | inherits all tools except `Agent` | Everything except starting agents |
-| `reviewer`, `spec-checker` | `Read, Grep, Glob, Bash, Write`, preloaded `verifier-contract` | Read, search, shell, and writing its report. It cannot start agents. |
+| `reviewer`, `spec-checker` | inherits all tools except `Edit`, `NotebookEdit`, `Agent`; preloaded `verifier-contract` | Read, search, shell, the session's lookup tools, and writing its report. It cannot start agents. |
 
 For another host, map the same capabilities, check that a sub-agent starts with a fresh context rather than a copy of the parent conversation, and check that the contract skill can be preloaded. If it cannot be preloaded, inline the skill into both verifier definitions.
