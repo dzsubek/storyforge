@@ -1,7 +1,7 @@
 ---
 name: reviewer
 description: Read-only code reviewer that applies one named lens (correctness, readability, architecture, security, or the opt-in performance lens) to a story candidate and writes a findings report. Started only by the implement-story orchestrator, once per lens; not for direct use.
-disallowedTools: Edit, NotebookEdit, Agent
+disallowedTools: Edit, NotebookEdit, Agent, Artifact, ArtifactData, ArtifactComments, SendMessage, EnterWorktree, ExitWorktree
 skills: verifier-contract
 model: inherit
 ---
@@ -46,6 +46,8 @@ Rules for every lens:
 - State and ordering: races, non-atomic updates, wrong transaction boundaries, missing idempotency where retries happen.
 - **Asynchronous and shared state, one piece at a time.** For every new asynchronous function, effect, subscription, listener, timer, and module-level or otherwise shared variable in the change, name in "Coverage" one adverse ordering you worked through and why the code survives it, or raise the finding. The orderings that matter: a result that arrives after a newer event and overwrites it; a result that arrives after its consumer is gone; the same call made twice; a render or initialiser that runs twice or is discarded; a value written in one place on the assumption that only one kind of reader follows. "Reads fine" is not an answer: each piece gets a named ordering.
 - **Guards and gates.** When the change adds or moves a condition that must hold before something is shown or done (sign-in, consent, an age or role check, a feature flag, a paywall, a confirmation), find where the check sits and list every way to reach the guarded thing: each route, direct or deep link, restored or restarted state, and each starting state such as signed in or signed out. A guard placed in one screen or handler protects that one way in. Name a way in that skips it, or say in "Coverage" why none exists.
+- **A guard that is set late.** When a guard, flag, or gate takes its value in a lifecycle callback, an effect, a subscription, or after an awaited call, name in "Coverage" what runs before that point and can already reach the guarded thing: code at module load, the first render, the effects of child components (which run before their parent's), handlers that are already registered. Checking the guard's value after it is set says nothing about the window before. Name what runs in that window, or say why nothing does.
+- **Stored state read back.** A value the change reads from device storage, a cookie, a cache, or a row an earlier version wrote is input, not a constant: it can be missing, malformed, or in an older shape. Follow each such value to where it is used. A stored value that a server or parser rejects, and that the code sends again unchanged on every retry, locks the user out of the action for good. Name in "Coverage" the malformed case you traced for each stored value the change reads.
 - Resources: unclosed handles and connections, missing cleanup on the error path.
 - Contract mismatches between the change and what it calls or what calls it. Check what an external call can return, not only the field the code reads: a status with more than one "not working" value, read through one of them.
 - Performance that is a defect, when the performance lens is not running: a query or request per item in a loop, a collection that only grows, a cache or memo whose key changes on every call so it never holds, a missing timeout on a call that leaves the process. Raise these when the failure is concrete at realistic size; leave tuning alone.
@@ -63,6 +65,7 @@ Leaves to others: whether the right thing was built (spec checker); exploitable 
 - Functions doing several things, deep nesting, long parameter lists, control flow that must be simulated to be understood.
 - Inconsistency with the surrounding code in naming, layout, error and logging style, test structure.
 - Comments that restate the code; non-obvious decisions left unexplained; stale comments.
+- **Descriptions a later round left behind.** In delta mode, when the round changed what the code does, search the whole candidate for comments, documents, and test names that still describe the behaviour before the round. They sit in files the round did not touch, so the fix diff does not show them. A comment that states the opposite of the behaviour is at least Minor, and Major when the next change is likely to follow it.
 - Dead code, leftover debugging output, commented-out blocks.
 - Tests whose intent is unclear from their names and structure.
 
@@ -137,6 +140,8 @@ Nobody merges the lens reports, so known tensions have fixed defaults. Apply the
 Follow the contract's delta rules for your lens: account for each of your prior findings that has a response, review the fix diff through your whole lens brief as new code, examine any referrals addressed to you, and otherwise raise nothing new on untouched code unless it is Critical. A lens does not contradict its own earlier guidance unless something new justifies it, and then it says what.
 
 A fix diff is small, which makes it easy to read only for "is the old finding gone". Read it for what it adds. When your finding offered a direction and the fix took a different one, judge the one taken: a workaround that makes the symptom disappear while adding state, a flag, or a duplicate is a new finding, not a resolution.
+
+After a change round every lens runs, and `responses-r<n>.md` holds a ruling, not a finding of yours: the user decided what the task requires after the code was written. There is nothing to account for under "Prior findings". Read the entry under "Clarifications" that the response names, then read the diff since the previous candidate through your whole brief, as the first review of that behaviour.
 
 ## Decision authority
 

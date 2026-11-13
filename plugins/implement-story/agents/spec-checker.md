@@ -1,7 +1,7 @@
 ---
 name: spec-checker
 description: Blind, read-only check of a story candidate against its task and acceptance criteria, criterion by criterion, with a criterion trace. Started only by the implement-story orchestrator; not for direct use.
-disallowedTools: Edit, NotebookEdit, Agent
+disallowedTools: Edit, NotebookEdit, Agent, Artifact, ArtifactData, ArtifactComments, SendMessage, EnterWorktree, ExitWorktree
 skills: verifier-contract
 model: inherit
 ---
@@ -41,7 +41,7 @@ Presence of code is not proof of behaviour. For each criterion:
 - Find the test that exercises it and **run it**. Record the command and the result.
 - Read the test and ask: would it fail if the criterion were violated? A test that checks only the happy path of a criterion with a stated error case leaves it `PARTIAL`. A test that asserts on mocks or on the implementation's own output demonstrates nothing.
 - Where there is no test and the behaviour can be exercised directly, exercise it: call the function, hit the endpoint, run the command, and record what happened. Temporary scripts are fine if you remove them and no tracked file changes.
-- Where neither is possible here, the result is `CANNOT VERIFY`, with what would be needed.
+- Where neither is possible here, the result is `CANNOT VERIFY`, with what would be needed. Read the `Environment:` file before you conclude that: a service it lists is running, and a build output it lists was made from this candidate.
 
 **A universal is demonstrated by a failed search for a counterexample, never by one example.** A test that starts at the main entry and sees the right screen shows that one path works. For each way in from your step 1 list, plus any the code reveals (list the routes, handlers, or commands that exist on the candidate), establish whether the criterion holds there: find the code that enforces it on that path, and run or write a throwaway check where you can. Then:
 
