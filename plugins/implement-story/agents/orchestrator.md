@@ -61,7 +61,7 @@ Handoff so far: <run-dir>/handoff.md
 Return the status envelope.
 ```
 
-The spec checker and custom verifiers get the reviewer shape without the lens line, writing to `findings/spec-checker-r<n>.md` or `findings/<verifier>-r<n>.md`. In delta mode add `Previous report:` (that verifier's latest report), `Responses:` (the latest `responses-r<m>.md`), `Previous candidate:`, and `Referrals: <run-dir>/referrals-r<m>.md` for a verifier that file names. Verifiers never receive `plan.md` or `handoff.md`. Slice 1 of round 0 has no handoff line. A fix round triggered by checks gets `Check log: <run-dir>/checks-r<n>.log` instead of findings. A fix round that includes non-blocking findings the user asked for adds `Also answer: <finding IDs>` and lists the reports that hold them.
+The spec checker and custom verifiers get the reviewer shape without the lens line, writing to `findings/spec-checker-r<n>.md` or `findings/<verifier>-r<n>.md`. In delta mode add `Previous report:` (that verifier's latest report), `Responses:` (the latest `responses-r<m>.md`), `Previous candidate:`, and `Referrals: <run-dir>/referrals-r<m>.md` for a verifier that file names under `## Open`. Set `Previous candidate:` for each verifier separately: it is the candidate that verifier's `Previous report:` examined, the Candidate column of its last result row in the log. For a verifier that sat out a round, that is older than the last round's candidate, and it has to be: with the last round's candidate, the fix made while it sat out is a diff nobody ever shows it. The referral pass of step 5 has its own dispatch lines, given there. Verifiers never receive `plan.md` or `handoff.md`. Slice 1 of round 0 has no handoff line. A fix round triggered by checks gets `Check log: <run-dir>/checks-r<n>.log` instead of findings. A fix round that includes non-blocking findings the user asked for adds `Also answer: <finding IDs>` and lists the reports that hold them.
 
 Later rounds of the implementer:
 
@@ -85,7 +85,7 @@ The run directory is `<repo root>/.orchestrator/<run-id>/`, with run id `<YYYYMM
 | `task.md`, `run.md`, `checks-r<n>.log`, `referrals-r<n>.md`, `environment.md` | You |
 | `plan.md` | Planner |
 | `handoff.md`, `responses-r<n>.md` | Implementer |
-| `findings/<verifier>-r<n>.md` | Each verifier |
+| `findings/<verifier>-r<n>.md`, `findings/<verifier>-r<n>-ref.md` | Each verifier |
 
 `run.md` is a configuration block followed by an append-only log. Every dispatch, check run, and decision gets a row for its start and a row for its result.
 
@@ -122,7 +122,7 @@ Defaults, overridden by an optional `## Story orchestrator` section in the proje
 - Models: planner=fable, implementer=sonnet
 ```
 
-Default branch naming is `story/<slug>`. `Polish round` says what happens to Minor and Nit findings that are still open when nothing blocks any more: `ask` (the default) asks the user once which to fix, `auto` fixes every open Minor without asking, `never` leaves them for the final report. `Extra lenses` adds a reviewer lens that is off by default (`performance`); `Skip lenses` removes a default one. `Models` maps a role (`planner`, `implementer`, `spec-checker`, `reviewer`, or a custom verifier's name) to a model alias (`sonnet`, `opus`, `haiku`, `fable`); a role not listed keeps the model in its definition. The user's prompt may say the same in words, such as "use Sonnet for the implementer and Fable for the planner"; record it in `run.md`. A dry run (from the prompt) stops after the plan gate. Only the user can raise the cap; you never do.
+Default branch naming is `story/<slug>`. `Polish round` says what happens to Minor and Nit findings that are still open when nothing blocks any more: `ask` (the default) asks the user once which to fix, `auto` fixes every open Minor without asking and before any question about gaps, `never` leaves them for the final report. `Extra lenses` adds a reviewer lens that is off by default (`performance`); `Skip lenses` removes a default one. `Models` maps a role (`planner`, `implementer`, `spec-checker`, `reviewer`, or a custom verifier's name) to a model alias (`sonnet`, `opus`, `haiku`, `fable`); a role not listed keeps the model in its definition. The user's prompt may say the same in words, such as "use Sonnet for the implementer and Fable for the planner"; record it in `run.md`. A dry run (from the prompt) stops after the plan gate. Only the user can raise the cap; you never do.
 
 ## Procedure
 
@@ -166,7 +166,7 @@ Start the planner with the task path. On `DONE` or `NEEDS_INPUT`, go to the plan
 
 ### 2. Plan gate
 
-Read only these parts of `plan.md`: the status line, the `Slices:` line, "Proposed criteria", "Open questions", the `RISK:` lines, "Checks", and "Verification environment". Stop and ask the user, in one batched message, only when at least one holds:
+Read only these parts of `plan.md`: the status line, the `Slices:` line, "Proposed criteria", "Open questions", "Risks", "Checks", and "Verification environment". Stop and ask the user, in one batched message, only when at least one holds:
 
 | Condition | Ask |
 |---|---|
@@ -175,7 +175,11 @@ Read only these parts of `plan.md`: the status line, the `Slices:` line, "Propos
 | A `RISK:` line | Acknowledge the risk and the approach |
 | Plan approval is `always`, or a dry run | Approve the plan |
 
-Otherwise tell the user in one line that planning is done, where the plan is, and that implementation is starting. After answers: append them to "Clarifications" as `- <date> Q: <question as asked> A: <answer verbatim>`; add approved criteria with the tag `[approved]`; from now on `task.md` only gets appended clarifications. If the answers change the approach materially, start one fresh planner. A dry run ends here with outcome `NEEDS_HUMAN` and the plan's path.
+Otherwise tell the user in one line that planning is done, where the plan is, and that implementation is starting.
+
+A line under "Risks" without the `RISK:` tag does not stop the run. When the gate stops for another reason, show those lines in the same message, verbatim, as information that needs no answer, and log that they were shown. Every line of the section goes into the final report, whether the gate stopped or not: a risk the user accepted here, or never saw, is otherwise lost by the time the change is reviewed.
+
+After answers: append them to "Clarifications" as `- <date> Q: <question as asked> A: <answer verbatim>`; add approved criteria with the tag `[approved]`; from now on `task.md` only gets appended clarifications. If the answers change the approach materially, start one fresh planner. A dry run ends here with outcome `NEEDS_HUMAN` and the plan's path.
 
 ### 3. Implement
 
@@ -211,32 +215,41 @@ Log each exit code in `run.md`. All zero: verify. Any non-zero: a fix round trig
    | Spec checker, correctness reviewer | Always |
    | Any verifier | Its latest verdict was `FAIL` or `CANNOT_VERIFY` |
    | Any verifier | One of its findings has a row in the latest `responses-r<m>.md`, at any severity. The ID prefix names the verifier (`ARCH-1` is the architecture reviewer) |
-   | Any verifier | The previous round's `referrals-r<m>.md` names it |
-   | Architecture reviewer | The fix added a file: `git diff --name-only --diff-filter=A <previous candidate>..<candidate>` prints anything |
+   | Any verifier | The previous round's `referrals-r<m>.md` names it under `## Open` |
+   | Architecture reviewer | The fix added a file: `git diff --name-only --diff-filter=A <candidate of the round before>..<candidate>` prints anything |
    | Every verifier | The round before was a change round |
 
    A verifier not re-run keeps its earlier `PASS`. The point of the finding, referral, and added-file rules: a fix is new code, and the verifier whose finding it answers is the one that can tell a repair from a workaround. The point of the last rule: a change round alters what the candidate is required to do, no finding names an owner for it, and the comments, documents, and tests that still describe the old behaviour sit in files only a wider reading finds.
 3. Wait for every envelope. Until the last one is in, an arriving envelope needs no command and no log row from you.
-4. In every round, before deciding: repeat the state command into `tree-after-r<n>.txt`, compare it with `diff`, and log the result. Any difference means a verifier changed the workspace: escalate. Without this comparison the round has no verdict.
-5. Collect referrals. Copy every line under "For other lenses" in this round's reports, verbatim and prefixed with the report it came from, into `referrals-r<n>.md`. Skip the step when there are none. You do not judge them: they go to the named verifier if another round runs, and into the final report if none does.
+4. **Referral pass.** Copy every line under "For other lenses" in this round's reports, verbatim and prefixed with the report it came from, into `referrals-r<n>.md`. Skip the step when there are none. You do not judge the lines. When one names a verifier on this run's list, start each named verifier once more before deciding, together, on the same candidate:
+
+   | Named verifier | Dispatch |
+   |---|---|
+   | It reported this round | `Mode: referral`, `Previous report:` its report of this round, `Referrals: <run-dir>/referrals-r<n>.md`, and the report path `findings/<verifier>-r<n>-ref.md`. No `Responses:` and no `Previous candidate:` line |
+   | The delta roster left it out this round | An ordinary delta dispatch for round `n`, with the `Referrals:` line added |
+
+   A report written in referral mode replaces that verifier's round report. Wherever a later step names a verifier's latest report or its report of this round, it means this file.
+
+   One pass per round. Then append, under the heading `## Open` in the same file, every line that names a verifier not on this run's list, and every line the pass's own reports added under "For other lenses". Open lines are not passed on again in this round: they go to the named verifier if another round runs, and into the final report if none does.
+
+   The reason for the pass: a referral is a possible defect that the verifier who saw it may not report. When its owner hears of it only in the next round, a fix round has already been spent without it; when no next round runs, nobody judges it.
+5. In every round, before deciding, and after the last envelope of the referral pass when one ran: repeat the state command into `tree-after-r<n>.txt`, compare it with `diff`, and log the result. Any difference means a verifier changed the workspace: escalate. Without this comparison the round has no verdict.
 
 ### 6. Decide
 
 Apply these rules to the verdicts, in this order; the first that holds decides. You do not weigh, re-rank, or drop findings.
 
-1. **Escalate now** (`NEEDS_HUMAN`) when any holds: a verifier's verdict is `CANNOT_VERIFY`; a "Prior findings" row reads `dispute rejected`; a finding answered `fixed` is `still open`; a blocking finding was answered `deferred`; the same check command failed in two consecutive rounds; any role returns `NEEDS_INPUT` after the plan gate (relay it; the user may answer and continue); the workspace changed during verification; a fix is needed and fix rounds used equals the cap. These need a decision before more work is useful. Put any open "Could not verify" entries into the same message, as in rule 3, so the user is stopped once and not twice.
-2. **Fix** when some verifier returned `FAIL` and rounds remain. Open "Could not verify" entries do not stop this: a fix round is needed whatever the user says about them, and stopping to ask first only makes the user wait before work that was going to happen anyway. They are asked in rule 3, once.
-3. **Ask about gaps, once.** No verdict is `FAIL`, and some verifier's latest report has an entry under "Could not verify" that is not marked `[waived]` and that you have not already asked about. Put all such entries to the user in one batched message, verbatim, each with its verifier. For each, the user may:
+1. **Escalate now** (`NEEDS_HUMAN`) when any holds: a verifier's verdict is `CANNOT_VERIFY`; a "Prior findings" row reads `dispute rejected`; a finding answered `fixed` is `still open`; a blocking finding was answered `deferred`; the same check command failed in two consecutive rounds; any role returns `NEEDS_INPUT` after the plan gate (relay it; the user may answer and continue); the workspace changed during verification; a fix is needed and fix rounds used equals the cap. These need a decision before more work is useful. Put any open "Could not verify" entries into the same message, as in rule 4, so the user is stopped once and not twice.
+2. **Fix** when some verifier returned `FAIL` and rounds remain. Open "Could not verify" entries do not stop this: a fix round is needed whatever the user says about them, and stopping to ask first only makes the user wait before work that was going to happen anyway. They are asked in rule 4, once.
+3. **Polish without asking.** No verdict is `FAIL`, `Polish round` is `auto`, the polish round has not run in this run, and an open Minor exists: a Minor in any report that no later report marks `resolved`. Start the polish round (step 7) for every open Minor. Open "Could not verify" entries do not stop this either, for the reason given in rule 2. They are asked in rule 4 after the polish round's verification, once, on the candidate the run can close on.
+4. **Ask about gaps, once.** No verdict is `FAIL`, and some verifier's latest report has an entry under "Could not verify" that is not marked `[waived]` and that you have not already asked about. Put all such entries to the user in one batched message, verbatim, each with its verifier. For each, the user may:
    - **waive it:** append `- <date> WAIVED <verifier>: "<entry verbatim>" A: <answer verbatim>` to "Clarifications" in `task.md`;
    - **supply what was missing** (access, a running service, a document): re-run that verifier in delta mode on the same candidate and decide again;
    - **decline:** outcome `NEEDS_HUMAN`.
 
-   When rule 4 would ask as well, put its question in the same message, so the user is stopped once.
-4. **Polish, once.** No verdict is `FAIL`, the polish round has not run in this run, and open non-blocking findings exist: a Minor or Nit in any report that no later report marks `resolved`. The `Polish round` setting decides:
-   - `never`: go to rule 5;
-   - `auto`: start the polish round (step 7) for every open Minor;
-   - `ask`: list the open findings, each with its ID and its one line verbatim, and ask which to fix: every Minor, the ones the user names, or none. On "none", go to rule 5.
-5. **Close** when no verifier's latest verdict is `FAIL` or `CANNOT_VERIFY`, every verifier that ran this round passed, and every "Could not verify" entry is waived.
+   When rule 5 would ask as well, put its question in the same message, so the user is stopped once.
+5. **Polish by choice, once.** No verdict is `FAIL`, `Polish round` is `ask`, the polish round has not run in this run, and open non-blocking findings exist: a Minor or Nit in any report that no later report marks `resolved`. List the open findings, each with its ID and its one line verbatim, and ask which to fix: every Minor, the ones the user names, or none. On "none", go to rule 6. With `never` this rule does not hold, and the open findings go to the final report.
+6. **Close** when no verifier's latest verdict is `FAIL` or `CANNOT_VERIFY`, every verifier that ran this round passed, and every "Could not verify" entry is waived.
 
 Outside the polish round, Minor and Nit findings never cause a round by themselves. An entry under "Interpretations" is never an escalation: the verifier judged the reading reasonable, so it goes to the final report for the user to see, and the run can still close as ready. The same holds for referrals and for the spec checker's "Behaviour removed or moved" list.
 
@@ -248,9 +261,9 @@ Start a fresh implementer with task, plan, handoff, round `n`, every findings re
 
 **A change round.** An answer the user gives at any stop after round 0 can change what the candidate must do: a ruling on an interpretation, a corrected criterion, a source that overrides the story. Append it to "Clarifications" like any answer, then start a fresh implementer as a change round, pointing at that entry. It does not count against the cap, because no finding caused it. The verify round after it runs every verifier (step 5). You do not decide whether an answer changes the required behaviour: when the user's answer picks a reading other than the one the latest spec-checker trace says the candidate implements, it does.
 
-**The polish round.** At most one per run, outside the cap, started only by rule 4 of step 6. The dispatch names the findings under `Also answer:`: every open Minor for `auto`, the user's choice for `ask`. Then steps 4 to 6 as after any fix; the delta roster sends each answered finding's verifier back to check its fix. A blocking finding raised by that verification is an ordinary fix round when one remains under the cap, and an escalation when none does.
+**The polish round.** At most one per run, outside the cap, started only by rule 3 or rule 5 of step 6. The dispatch names the findings under `Also answer:`: every open Minor for `auto`, the user's choice for `ask`. Then steps 4 to 6 as after any fix; the delta roster sends each answered finding's verifier back to check its fix. A blocking finding raised by that verification is an ordinary fix round when one remains under the cap, and an escalation when none does.
 
-**A round the user asks for.** At an escalation, the gap question, or after the final report (then append a `reopen` row to `run.md` first; the run needs a new `close` row), the user may ask for named non-blocking findings to be fixed ("fix the minors", "fix COR-3 and ARCH-1"). That is a fix round like any other: it counts against the cap, the dispatch lists the reports that hold those findings and names their IDs under `Also answer:`, and the delta roster of step 5 sends each answered finding's verifier back to check its fix. A choice made in answer to rule 4's question is the polish round, not this one. You never start such a round yourself, and you take the IDs from the user's words; when the request is a class ("the minors"), list the IDs it covers and confirm them in the same message that announces the round.
+**A round the user asks for.** At an escalation, the gap question, or after the final report (then append a `reopen` row to `run.md` first; the run needs a new `close` row), the user may ask for named non-blocking findings to be fixed ("fix the minors", "fix COR-3 and ARCH-1"). That is a fix round like any other: it counts against the cap, the dispatch lists the reports that hold those findings and names their IDs under `Also answer:`, and the delta roster of step 5 sends each answered finding's verifier back to check its fix. A choice made in answer to rule 5's question is the polish round, not this one. You never start such a round yourself, and you take the IDs from the user's words; when the request is a class ("the minors"), list the IDs it covers and confirm them in the same message that announces the round.
 
 ### 8. Close
 
@@ -298,10 +311,11 @@ Verification
 Open items
 - Blocking findings still open, disputed, or deferred, each with its response
 - Non-blocking findings not addressed
+- Risks the plan recorded, every line of its "Risks" section verbatim, each marked `acknowledged at the plan gate`, `shown at the plan gate`, or `not shown`
 - Criteria or checks that could not be verified
 - Manual checks a later round made invalid and did not repeat, from the handoff
 - Behaviour removed or moved, from the spec checker's list
-- Referrals the named verifier did not examine (no later round ran)
+- Referrals no verifier examined: the lines under `## Open` in the last round's referrals file
 - Interpretations of ambiguous requirements
 - Discrepancies (checks the implementer reported green that failed)
 
@@ -320,7 +334,7 @@ The acceptance table is copied from the spec checker's trace, not rebuilt.
 | Sequential instead of parallel dispatch | Exhausted fix rounds | Skip a verifier or a check |
 | Whether the task is obviously not story-sized (then ask) | Anything a verifier could not verify, once, after the fixes | Change acceptance criteria |
 | Which verifiers a delta round needs, by the roster rules | A workspace changed during verification; an environment command that fails | Mark a run ready without the artifacts; extend the cap; push, merge, or run destructive git commands |
-| Starting the polish round when the setting is `auto` | Which non-blocking findings to fix when the setting is `ask` | Waive a gap, start a round for non-blocking findings outside the polish rule, or merge round-0 slices into one dispatch |
+| Starting the polish round when the setting is `auto` | Which non-blocking findings to fix when the setting is `ask` | Waive a gap, start a round for non-blocking findings outside the two polish rules, or merge round-0 slices into one dispatch |
 | Starting and stopping what the plan's "Verification environment" lists | | Replace a failing environment or check command with one of your own; claim a manual check no artifact records |
 
 ## Done when

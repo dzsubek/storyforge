@@ -14,9 +14,11 @@ The dispatch gives you paths and parameters only:
 
 - the run directory and the path to `task.md`: the task verbatim, its numbered acceptance criteria (`AC-<n>`), the user's requirements for this run, out-of-scope items, clarifications;
 - the candidate: `<base sha>..<head sha>`;
-- the round number and the mode, `full` or `delta`;
+- the round number and the mode, `full`, `delta`, or `referral`;
 - the path to write your report to;
-- in delta mode: your own previous report and `responses-r<n>.md`, and `Referrals:` when another verifier passed an observation to you;
+- in delta mode: your own previous report, `responses-r<n>.md`, and `Previous candidate:`, the candidate that report examined;
+- in referral mode: your own report of this round, as `Previous report:`;
+- `Referrals:`, in delta and referral mode, when another verifier passed an observation to you: a file of such lines, of which the ones naming you are yours;
 - `Lookup:`, when the run has one: the tool or copy to open cited sources with;
 - `Environment:`, when the run has one: a file listing the services the coordinator has running and the build outputs it made from this candidate, each with what it gives (a variable and its value, a URL, a path);
 - any configuration specific to you.
@@ -69,7 +71,7 @@ Write this shape to the path you were given. Findings, not narration.
 # Findings: <verifier>, round <n>
 VERDICT: PASS | FAIL | CANNOT_VERIFY
 Candidate: <base sha>..<head sha>
-Mode: full | delta
+Mode: full | delta | referral
 
 ## Blocking findings
 
@@ -105,9 +107,9 @@ Rules:
 - **IDs** are `<PREFIX>-<n>`, unique within the run and never renumbered. Your prefix is given in your own definition (`SPEC`, `COR`, `READ`, `ARCH`, `SEC`, `PERF`; a project-defined verifier uses its own, for example `UI`). In delta mode, continue numbering after your highest earlier ID.
 - **Location** is a file and line, or the criterion ID when the problem is something missing.
 - **Suggested fix** is a direction the author can act on, never a rewritten file.
-- Write "none" under a heading that has nothing, rather than dropping the heading. "Prior findings" appears only in delta mode.
+- Write "none" under a heading that has nothing, rather than dropping the heading. "Prior findings" appears in delta mode, and in a referral report when the round report it replaces has it.
 - **An empty report is a valid result.** Do not manufacture findings. Say plainly what you examined.
-- Every entry under **"Could not verify"** is put to the user before the run can close, so use it for real gaps only, one entry per line. An entry is waived when a line under "Clarifications" in `task.md` accepts that gap: a `WAIVED` line, or an answer that settles what happens until a missing dependency exists. Keep a waived entry in the list, prefixed `[waived]`, and cite the line; the user is not asked about it again.
+- Every entry under **"Could not verify"** is put to the user before the run can close, and stops the run until it is answered, so use it for real gaps only, one entry per line. An entry is something inside your own question that you could not answer, and that leaves your answer incomplete. Two things are not entries. What another verifier is there to check is not your gap, even when you did not see it checked: a reader of the code does not list the device check that belongs to the verifier running the app. Say under "Coverage" that you left it to that verifier. And something you established by other means is verified: a behaviour shown by a test that ran needs no entry because you did not also watch it on a device. An entry is waived when a line under "Clarifications" in `task.md` accepts that gap: a `WAIVED` line, or an answer that settles what happens until a missing dependency exists. Keep a waived entry in the list, prefixed `[waived]`, and cite the line; the user is not asked about it again.
 - **"For other lenses"** holds one line per observation: the verifier it belongs to (`correctness`, `security`, `spec-checker`, a custom verifier's name), a location, and what you saw. State the fact, not a verdict: the owning verifier judges it.
 - **"Interpretations"** is information for the user and blocks nothing.
 
@@ -126,15 +128,24 @@ Do not raise a severity to force a fix, and do not lower one to let a candidate 
 | Mode | When | You examine |
 |---|---|---|
 | Full | First verify round | The whole change, base to head |
-| Delta | Every later round | Your prior findings that have a response, the diff since the previous candidate, and any referrals. After a change round, the ruling and the diff that built it |
+| Delta | Every later round | Your prior findings that have a response, the diff from `Previous candidate:` to the head, and any referrals. After a change round, the ruling and the diff that built it |
+| Referral | Straight after a round in which another verifier passed you an observation | The lines addressed to you in the `Referrals:` file, on the candidate you have just reported on. Nothing else |
 
 In delta mode:
 
 1. Account in "Prior findings" for every blocking finding in your previous report, and for every other finding of yours that has a row in `responses-r<n>.md`: `resolved`, `still open`, `dispute accepted` (withdrawn), or `dispute rejected` (sustained, with the reason). A finding answered `deferred` stays `still open`.
-2. Review the diff since the previous candidate as new code, to the same standard as a full round and through your whole brief. Whether it resolves the prior finding is one question; what it adds is another. A fix that adds a file, a module-level variable, a flag, or a second copy of a constant is where the next defect sits, and nobody else may read it.
-3. Examine each line in the `Referrals:` file addressed to you as you would a suspicion of your own. It becomes a finding at whatever severity the evidence supports, or one line under "Coverage" saying why it is not one.
+
+   Before you mark a finding `resolved`, look for the same defect elsewhere in the code. A finding names the instance you saw, and a fix can repair that instance alone. The finding's row in `responses-r<n>.md` names the class the fix covered and its members: check that list against the code, and search for a member it does not name. An instance that remains is a new finding at the original's severity, citing the original's ID. Rule 4's limit does not apply to it, wherever it sits: it is the defect you already reported, not a new demand. The original is `resolved` when the instance it named is gone.
+2. Review the diff since the previous candidate as new code, to the same standard as a full round and through your whole brief. Whether it resolves the prior finding is one question; what it adds is another. A fix that adds a file, a module-level variable, a flag, or a second copy of a constant is where the next defect sits, and nobody else may read it. `Previous candidate:` is the candidate your own last report examined. When you sat out a round it lies more than one round back, and the diff then holds every fix made since: all of it is code you have not read.
+3. Examine each line in the `Referrals:` file addressed to you as you would a suspicion of your own. It becomes a finding at whatever severity the evidence supports, or one line under "Coverage" saying why it is not one. The limit in rule 4 does not apply to a referral, wherever the code sits and whichever round wrote it: another reader formed the suspicion on this candidate, so judging it moves no goalpost. A referral you confirm and then leave out because it is below Critical is a defect two verifiers saw and nobody reported.
 4. Otherwise, raise a new finding on code the fix did not touch only at Critical severity. No moving goalposts. One exception: text the round made wrong belongs to the round wherever it sits. A comment, a document, or a test name that still describes the behaviour the round replaced is a finding at its own severity, even in a file the diff does not show.
 5. After a change round, `responses-r<n>.md` holds a ruling in place of findings: the user decided what the task requires after the code was written, and the round built it. Read the "Clarifications" entry it names. The diff since the previous candidate is then new behaviour, and this is its first review: apply your whole brief to it, as in a full round.
+
+In referral mode the candidate has not changed since your report of this round. Another verifier saw something that belongs to your question and may not report it. You judge it now, so that a fix round can answer it together with the other findings, and so that it is judged at all when no further round runs.
+
+1. Examine each line addressed to you as in delta rule 3: a finding at whatever severity the evidence supports, under the same evidence requirements, or one line under "Coverage" saying why it is not one. Several lines about the same thing make one finding. That your round report passed the same code is not a reason: say what the line shows that you had weighed differently, or raise it.
+2. Examine nothing else, and leave your other findings as they are.
+3. Write a complete report to the path you were given: your round report, with the new findings numbered after your highest ID, the new "Coverage" lines, and the verdict derived again. It replaces the round report, so nothing from that report may be missing. When no line is addressed to you, write the round report again unchanged.
 
 On a dispute, judge the argument, not the author. If the reason holds, withdraw. Sustaining a finding costs the user a decision, so sustain only with evidence.
 
