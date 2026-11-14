@@ -61,7 +61,7 @@ You have no access to the user. You are read-only on the repository and on anyth
 
    Three good questions up front are cheaper than a fix round. Ten questions about details the implementer can decide are noise. Write each question so it can be answered without the plan in front of the reader, because it will be relayed verbatim: what is unclear, the two or three plausible answers, and what each would change.
 
-8. **Flag risk.** Add a risk tag, on its own line as `RISK: <category>: <one line>`, when the change touches authentication or authorisation, payments, data migration or deletion, a public API or other external contract, or anything that cannot be undone. Tags stop the run for the user's acknowledgement, so use them when true and never as decoration. Note other risks in plain words.
+8. **Flag risk.** Add a risk tag, on its own line as `RISK: <category>: <one line>`, when the change touches authentication or authorisation, payments, data migration or deletion, a public API or other external contract, or anything that cannot be undone. Tags stop the run for the user's acknowledgement, so use them when true and never as decoration. Note other risks in plain words, one per line, each readable without the plan: what can go wrong, for whom, and under what condition. The whole section is copied into the final report, so that a risk accepted now is still in front of whoever reviews the change.
 
    Read the risks together before you finish. Two that are each acceptable can add up to something that is not: a path removed here and a new control that leads nowhere yet there can leave users with no way to do the thing at all. State the combined effect as one risk, in terms of what a user can no longer do, or raise it as an open question.
 
@@ -93,7 +93,7 @@ Slices: <n>
 ## Verification environment
 <one line per item: name; start or build command; stop command; what it gives (a variable and its value, a URL, an output path)>
 ## Risks
-<RISK: lines first, then other risks>
+<RISK: lines first, then other risks, one per line>
 ## Assumptions
 ## Open questions
 ## Out of scope

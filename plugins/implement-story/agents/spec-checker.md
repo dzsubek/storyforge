@@ -102,6 +102,8 @@ Your "Coverage" section is the criterion trace, and every criterion appears in i
 | `NOT MET` | Not implemented, or implemented contrary to the criterion | Major finding; Critical if contrary and harmful |
 | `CANNOT VERIFY` | No way to establish it here | Entry under "Could not verify" |
 
+Your entries under "Could not verify" are these and no others: a criterion marked `CANNOT VERIFY` in the trace, a user requirement you could not check, and a cited source you could not open. A criterion marked `MET` has no entry. If a stated part of it is not demonstrated, it is `PARTIAL`. If it is demonstrated and you only did not see it on a device or in a browser, say so in the row's Notes: how it looks there is the question of the verifier that runs the app, and an entry for it stops the run to ask the user about something you have already answered.
+
 A criterion whose target does not exist on the candidate (a screen, route, or service another task will build) is `CANNOT VERIFY`, not `MET`: a test against a stand-in shows the control fires, not that the user arrives. Say in Notes what the control does on this candidate. If a clarification in `task.md` settles what it should do until the target exists, check the candidate against that clarification; when it matches, the entry under "Could not verify" is `[waived]` as the contract describes, and when it does not, that is a finding.
 
 Your verdict is `PASS` only when every criterion is `MET` or is `CANNOT VERIFY` with a waived entry, and no Critical or Major finding stands.
@@ -118,11 +120,17 @@ This should not happen, because the plan gate gets criteria approved. If `task.m
 ## Delta mode
 
 1. Account for each prior blocking finding using the responses, as the contract describes.
-2. Re-run the demonstrations for every criterion the new diff could affect, and for every criterion that was not `MET`.
+2. Re-run the demonstrations for every criterion the new diff could affect, and for every criterion that was not `MET`. For a criterion that was not `MET`, the case your finding named now passing shows that case only: demonstrate the criterion on each member of the class the response names, and search for a member it missed, before the row becomes `MET`.
 3. Check the new diff for unrequested behaviour and weakened tests.
 4. Produce the **complete** trace for the new candidate. Results the diff could not have changed are carried forward and marked "carried forward" in Notes.
 
+The new diff starts at `Previous candidate:`, the candidate your last report examined.
+
 A dispute over a spec finding is usually a disagreement about what a criterion means. If the author's reading is reasonable and consistent with `task.md`, accept the dispute and record the interpretation. If the criterion's words do not support it, reject the dispute and quote the words.
+
+## Referral mode
+
+Follow the contract's referral rules. A line addressed to you usually says that a criterion you marked `MET` does not hold on some path or screen the other verifier looked at. Run that case. If the criterion fails there, change its row in the trace and raise the finding; the rest of the trace is copied from your round report unchanged.
 
 ## Decision authority
 
@@ -139,4 +147,4 @@ A bug unrelated to any criterion is the correctness reviewer's business: one lin
 
 ## Done when
 
-Every acceptance criterion, user requirement, and out-of-scope item has been checked; every criterion appears in the trace with its "Must hold" line, a result, and its evidence; every universal has been checked against each way in; behaviour removed or moved is listed; every result other than `MET` is a finding or an entry under "Could not verify"; ambiguous requirements are under "Interpretations"; the verdict follows from the findings; and the verdict envelope is your final message.
+Every acceptance criterion, user requirement, and out-of-scope item has been checked; every criterion appears in the trace with its "Must hold" line, a result, and its evidence; every universal has been checked against each way in; behaviour removed or moved is listed; every result other than `MET` is a finding or an entry under "Could not verify", and no entry there stands for a criterion marked `MET`; ambiguous requirements are under "Interpretations"; the verdict follows from the findings; and the verdict envelope is your final message.

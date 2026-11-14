@@ -31,12 +31,12 @@ To resume an interrupted run, start the orchestrator again with no task, or with
 | Plan gate | You, only if needed | Answers to open questions, approval of inferred criteria, acknowledgement of risks |
 | Implement | One fresh implementer per plan slice, in order | Local commits and `handoff.md` |
 | Checks | Orchestrator | The services and build outputs the plan lists are started, then the plan's check commands run, judged by exit codes only |
-| Verify | Spec checker, four reviewers, custom verifiers, in parallel | One findings report each. They use the environment the orchestrator already has running |
-| Fix | Fresh implementer, at most twice | New commits, a response to every blocking finding, and the cheap non-blocking ones fixed in the same pass |
-| Re-verify | Spec checker, correctness reviewer, and every verifier whose finding was answered | Each fix read as new code |
-| Gaps | You, once, after the fixes | A waiver or a stop for each thing no verifier could check |
+| Verify | Spec checker, four reviewers, custom verifiers, in parallel | One findings report each. They use the environment the orchestrator already has running. What one verifier sees outside its own question goes to the verifier that owns it, which judges it in the same round |
+| Fix | Fresh implementer, at most twice | New commits, a response to every blocking finding, and the cheap non-blocking ones fixed in the same pass. A fix covers every place the defect occurs, not only the one the finding named, and its response lists them |
+| Re-verify | Spec checker, correctness reviewer, and every verifier whose finding was answered | Each fix read as new code, and checked for places it missed. A verifier that sat out a round reads every fix made since its last report |
+| Gaps | You, once, after the fixes, and after the polish round when the setting is `auto` | A waiver or a stop for each thing no verifier could check. A verifier lists only what belongs to its own question, not what another verifier is there to check |
 | Polish | Fresh implementer, at most once | The Minor and Nit findings still open, by the `Polish round` setting |
-| Close | Orchestrator | Final report |
+| Close | Orchestrator | Final report, with every risk the plan recorded |
 
 The plan gate stops only when the plan has open questions, proposes acceptance criteria that the story did not state, or touches a risk area (auth, payments, data migration or deletion, public contracts, anything irreversible). Otherwise you get a one-line notice and the run continues. A criterion whose target another story will build (a screen or service that does not exist yet) is always an open question: you decide what the control does in the meantime.
 
@@ -44,7 +44,7 @@ A source that says something different from the criterion citing it is an open q
 
 If one of your answers after the plan gate changes what the candidate must do, such as a ruling between two readings of a criterion, the orchestrator runs a **change round**. It does not count against the fix-round cap, and every verifier reads its result.
 
-With `Polish round: ask` you are asked once, before the close, which of the open Minor and Nit findings to fix; with `auto` every open Minor is fixed without a question; with `never` they are only listed. The polish round does not count against the cap. After a report you can still ask for named non-blocking findings to be fixed ("fix COR-3 and ARCH-1"). That runs as a normal fix round and counts against the cap.
+With `Polish round: ask` you are asked once, before the close, which of the open Minor and Nit findings to fix; with `auto` every open Minor is fixed without a question, before you are asked about anything no verifier could check; with `never` they are only listed. The polish round does not count against the cap. After a report you can still ask for named non-blocking findings to be fixed ("fix COR-3 and ARCH-1"). That runs as a normal fix round and counts against the cap.
 
 ## Outcomes
 
@@ -99,7 +99,7 @@ Your question: <what this verifier checks>. Finding prefix: `UI`.
 <method>
 ```
 
-Preloading `verifier-contract` gives it the shared rules: what it receives, that it writes only its own report and leaves tracked files untouched, the report format, the severity scale with its evidence rules, delta mode, how to pass an observation to another verifier, and the verdict envelope. A tool denylist, as above, keeps the session's lookup and device tools available to it; an allowlist (`tools:`) would remove them. The names after `Agent` are tools no verifier uses. Their definitions are sent with every step an agent takes, so denying them makes each step smaller. Put it in `.claude/agents/` and list it under "Extra verifiers".
+Preloading `verifier-contract` gives it the shared rules: what it receives, that it writes only its own report and leaves tracked files untouched, the report format, the severity scale with its evidence rules, delta and referral mode, how to pass an observation to another verifier, and the verdict envelope. A tool denylist, as above, keeps the session's lookup and device tools available to it; an allowlist (`tools:`) would remove them. The names after `Agent` are tools no verifier uses. Their definitions are sent with every step an agent takes, so denying them makes each step smaller. Put it in `.claude/agents/` and list it under "Extra verifiers".
 
 ## Permissions
 

@@ -137,9 +137,13 @@ Nobody merges the lens reports, so known tensions have fixed defaults. Apply the
 
 ## Delta mode
 
-Follow the contract's delta rules for your lens: account for each of your prior findings that has a response, review the fix diff through your whole lens brief as new code, examine any referrals addressed to you, and otherwise raise nothing new on untouched code unless it is Critical. A lens does not contradict its own earlier guidance unless something new justifies it, and then it says what.
+Follow the contract's delta rules for your lens: account for each of your prior findings that has a response, review the fix diff through your whole lens brief as new code, examine any referrals addressed to you and raise each one the evidence supports at its real severity, and otherwise raise nothing new on untouched code unless it is Critical. A lens does not contradict its own earlier guidance unless something new justifies it, and then it says what.
 
-A fix diff is small, which makes it easy to read only for "is the old finding gone". Read it for what it adds. When your finding offered a direction and the fix took a different one, judge the one taken: a workaround that makes the symptom disappear while adding state, a flag, or a duplicate is a new finding, not a resolution.
+The diff to read starts at `Previous candidate:`, the candidate your own last report examined. If your lens sat out a round, that diff includes the fix made in that round, and you are its first reader in your lens.
+
+In referral mode, follow the contract's referral rules: judge only the lines addressed to your lens, on the candidate you have just reported on, and write your round report again with the result added.
+
+A fix diff is small, which makes it easy to read only for "is the old finding gone". Read it for what it adds. When your finding offered a direction and the fix took a different one, judge the one taken: a workaround that makes the symptom disappear while adding state, a flag, or a duplicate is a new finding, not a resolution. Read it also for what it left out: your finding named one instance, so before you mark it `resolved`, check the class and members the response names and search for one it missed, as the contract's rule 1 describes.
 
 After a change round every lens runs, and `responses-r<n>.md` holds a ruling, not a finding of yours: the user decided what the task requires after the code was written. There is nothing to account for under "Prior findings". Read the entry under "Clarifications" that the response names, then read the diff since the previous candidate through your whole brief, as the first review of that behaviour.
 
