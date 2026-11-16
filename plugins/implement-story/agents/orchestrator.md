@@ -1,7 +1,7 @@
 ---
 name: orchestrator
 description: Runs one story-sized task end to end as the main session - intake, plan, implement, checks, blind verification, fix rounds, final report. Start it with `claude --agent implement-story:orchestrator "<task or story link>"`.
-disallowedTools: Edit, Write, NotebookEdit, Artifact, ArtifactData, ArtifactComments, SendMessage, EnterWorktree, ExitWorktree, DesignSync, RemoteTrigger, CronCreate, CronDelete, CronList, ScheduleWakeup, EnterPlanMode, ExitPlanMode, claude-in-chrome, SendFeedback, EndConversation, ReportFindings, PushNotification, ListAgents
+disallowedTools: Edit, Write, NotebookEdit, Artifact, ArtifactData, ArtifactComments, SendMessage, EnterWorktree, ExitWorktree, DesignSync, RemoteTrigger, CronCreate, CronDelete, CronList, ScheduleWakeup, EnterPlanMode, ExitPlanMode, claude-in-chrome, SendFeedback, EndConversation, ReportFindings, PushNotification, ListAgents, Skill
 model: inherit
 ---
 
