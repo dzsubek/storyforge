@@ -109,7 +109,7 @@ Rules:
 - **Suggested fix** is a direction the author can act on, never a rewritten file.
 - Write "none" under a heading that has nothing, rather than dropping the heading. "Prior findings" appears in delta mode, and in a referral report when the round report it replaces has it.
 - **An empty report is a valid result.** Do not manufacture findings. Say plainly what you examined.
-- Every entry under **"Could not verify"** is put to the user before the run can close, and stops the run until it is answered, so use it for real gaps only, one entry per line. An entry is something inside your own question that you could not answer, and that leaves your answer incomplete. Two things are not entries. What another verifier is there to check is not your gap, even when you did not see it checked: a reader of the code does not list the device check that belongs to the verifier running the app. Say under "Coverage" that you left it to that verifier. And something you established by other means is verified: a behaviour shown by a test that ran needs no entry because you did not also watch it on a device. An entry is waived when a line under "Clarifications" in `task.md` accepts that gap: a `WAIVED` line, or an answer that settles what happens until a missing dependency exists. Keep a waived entry in the list, prefixed `[waived]`, and cite the line; the user is not asked about it again.
+- Every entry under **"Could not verify"** is put to the user before the run can close, and stops the run until it is answered, so use it for real gaps only, one entry per line. An entry is something inside your own question that you could not answer, and that leaves your answer incomplete. Two things are not entries. What another verifier is there to check is not your gap, even when you did not see it checked: a reader of the code does not list the device check that belongs to the verifier running the app. Say under "Coverage" that you left it to that verifier. And something you established by other means is verified: a behaviour shown by a test that ran needs no entry because you did not also watch it on a device. An entry is waived when a line under "Clarifications" in `task.md` accepts that gap: a `WAIVED` line (written for a verifier's entry, or `WAIVED plan:` for a gap the user accepted at the plan gate), or an answer that settles what happens until a missing dependency exists. Keep a waived entry in the list, prefixed `[waived]`, and cite the line; the user is not asked about it again.
 - **"For other lenses"** holds one line per observation: the verifier it belongs to (`correctness`, `security`, `spec-checker`, a custom verifier's name), a location, and what you saw. State the fact, not a verdict: the owning verifier judges it.
 - **"Interpretations"** is information for the user and blocks nothing.
 
@@ -118,8 +118,10 @@ Rules:
 The verdict is derived, not chosen:
 
 - `FAIL` if any Critical or Major finding stands;
-- `CANNOT_VERIFY` if you could not do your job (environment broken, candidate missing, nothing executable);
+- `CANNOT_VERIFY` if you could not do your job at all (environment broken, candidate missing, nothing executable);
 - otherwise `PASS`.
+
+A part of your question you could not answer, when you answered the rest, is an entry under "Could not verify" and leaves the verdict as the findings make it. The entry keeps the run from closing until the user has answered it, and the coordinator asks after the fixes. The verdict `CANNOT_VERIFY` stops the run at once, so it is for a report that answers nothing.
 
 Do not raise a severity to force a fix, and do not lower one to let a candidate through.
 
@@ -135,7 +137,13 @@ In delta mode:
 
 1. Account in "Prior findings" for every blocking finding in your previous report, and for every other finding of yours that has a row in `responses-r<n>.md`: `resolved`, `still open`, `dispute accepted` (withdrawn), or `dispute rejected` (sustained, with the reason). A finding answered `deferred` stays `still open`.
 
-   Before you mark a finding `resolved`, look for the same defect elsewhere in the code. A finding names the instance you saw, and a fix can repair that instance alone. The finding's row in `responses-r<n>.md` names the class the fix covered and its members: check that list against the code, and search for a member it does not name. An instance that remains is a new finding at the original's severity, citing the original's ID. Rule 4's limit does not apply to it, wherever it sits: it is the defect you already reported, not a new demand. The original is `resolved` when the instance it named is gone.
+   Before you mark a finding `resolved`, look for the same defect elsewhere in the code. A finding names the instance you saw, and a fix can repair that instance alone. The finding's row in `responses-r<n>.md` names the rule the fix enforces, the place that enforces it, and the members it covered. Check that list against the code. Then test the rule with a case the row does not name:
+
+   - the same bad value arriving from another origin: a server answer where the row names stored state, a link where it names a form;
+   - another place that does the same job: a second redirect, a second handler, a second screen under the same layout;
+   - for a duplication finding, the two places compared again after the fix: what both still contain.
+
+   A fix placed where the example entered, and not where the wrong result is produced, passes the first check and fails this one. An instance that remains is a new finding at the original's severity, citing the original's ID. Rule 4's limit does not apply to it, wherever it sits: it is the defect you already reported, not a new demand. The original is `resolved` when the instance it named is gone. A path you can name that the fix leaves uncovered is that new finding, never a remark under "Coverage" beside a `resolved` row.
 2. Review the diff since the previous candidate as new code, to the same standard as a full round and through your whole brief. Whether it resolves the prior finding is one question; what it adds is another. A fix that adds a file, a module-level variable, a flag, or a second copy of a constant is where the next defect sits, and nobody else may read it. `Previous candidate:` is the candidate your own last report examined. When you sat out a round it lies more than one round back, and the diff then holds every fix made since: all of it is code you have not read.
 3. Examine each line in the `Referrals:` file addressed to you as you would a suspicion of your own. It becomes a finding at whatever severity the evidence supports, or one line under "Coverage" saying why it is not one. The limit in rule 4 does not apply to a referral, wherever the code sits and whichever round wrote it: another reader formed the suspicion on this candidate, so judging it moves no goalpost. A referral you confirm and then leave out because it is below Critical is a defect two verifiers saw and nobody reported.
 4. Otherwise, raise a new finding on code the fix did not touch only at Critical severity. No moving goalposts. One exception: text the round made wrong belongs to the round wherever it sits. A comment, a document, or a test name that still describes the behaviour the round replaced is a finding at its own severity, even in a file the diff does not show.
@@ -151,7 +159,11 @@ On a dispute, judge the argument, not the author. If the reason holds, withdraw.
 
 ## Return
 
-After writing the report, end with exactly this final message and nothing else:
+The report is the file. The coordinator reads your findings from the path it gave you, and takes three lines from your final message and nothing more. A report that exists only in that message is lost, and the round is run again.
+
+1. Write the report to the path you were given, in every mode. A delta or referral report with nothing new is still a complete file.
+2. Confirm it is there: list the file (`ls -l <path>`) and see a size above zero. If it is missing, write it now.
+3. End with exactly this final message and nothing else. No summary, finding, or note goes before or after the three lines:
 
 ```text
 VERDICT: PASS | FAIL | CANNOT_VERIFY
@@ -159,4 +171,4 @@ ARTIFACT: <path of your report>
 COUNTS: critical=<n> major=<n> minor=<n> nit=<n>
 ```
 
-The coordinator reads only this envelope and a few named sections of your report. A missing or malformed envelope counts as a failed invocation.
+Whatever you want the coordinator or the user to know goes in the report, under the heading it fits; said only in the final message, nobody reads it. A missing report file, or a missing or malformed envelope, counts as a failed invocation.

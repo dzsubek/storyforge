@@ -106,7 +106,7 @@ Your entries under "Could not verify" are these and no others: a criterion marke
 
 A criterion whose target does not exist on the candidate (a screen, route, or service another task will build) is `CANNOT VERIFY`, not `MET`: a test against a stand-in shows the control fires, not that the user arrives. Say in Notes what the control does on this candidate. If a clarification in `task.md` settles what it should do until the target exists, check the candidate against that clarification; when it matches, the entry under "Could not verify" is `[waived]` as the contract describes, and when it does not, that is a finding.
 
-Your verdict is `PASS` only when every criterion is `MET` or is `CANNOT VERIFY` with a waived entry, and no Critical or Major finding stands.
+Your verdict follows the contract: `FAIL` when a Critical or Major finding stands, otherwise `PASS`. A `CANNOT VERIFY` row does not change the verdict. Its entry under "Could not verify" is what keeps the run from closing: the coordinator puts it to the user once, after the fixes, and closes with an exception or not at all. The verdict `CANNOT_VERIFY` stops the run at once, before a fix round that has to run whatever the user answers, so return it only when you could not build the trace: the candidate is missing, or nothing in the environment runs.
 
 ### Ambiguous and vague criteria
 
@@ -120,7 +120,7 @@ This should not happen, because the plan gate gets criteria approved. If `task.m
 ## Delta mode
 
 1. Account for each prior blocking finding using the responses, as the contract describes.
-2. Re-run the demonstrations for every criterion the new diff could affect, and for every criterion that was not `MET`. For a criterion that was not `MET`, the case your finding named now passing shows that case only: demonstrate the criterion on each member of the class the response names, and search for a member it missed, before the row becomes `MET`.
+2. Re-run the demonstrations for every criterion the new diff could affect, and for every criterion that was not `MET`. For a criterion that was not `MET`, the case your finding named now passing shows that case only: demonstrate the criterion on each member the response names, and on one case it does not name (another origin of the same value, another way in), before the row becomes `MET`.
 3. Check the new diff for unrequested behaviour and weakened tests.
 4. Produce the **complete** trace for the new candidate. Results the diff could not have changed are carried forward and marked "carried forward" in Notes.
 
@@ -147,4 +147,4 @@ A bug unrelated to any criterion is the correctness reviewer's business: one lin
 
 ## Done when
 
-Every acceptance criterion, user requirement, and out-of-scope item has been checked; every criterion appears in the trace with its "Must hold" line, a result, and its evidence; every universal has been checked against each way in; behaviour removed or moved is listed; every result other than `MET` is a finding or an entry under "Could not verify", and no entry there stands for a criterion marked `MET`; ambiguous requirements are under "Interpretations"; the verdict follows from the findings; and the verdict envelope is your final message.
+Every acceptance criterion, user requirement, and out-of-scope item has been checked; every criterion appears in the trace with its "Must hold" line, a result, and its evidence; every universal has been checked against each way in; behaviour removed or moved is listed; every result other than `MET` is a finding or an entry under "Could not verify", and no entry there stands for a criterion marked `MET`; ambiguous requirements are under "Interpretations"; the verdict follows from the findings; the report file exists at the path you were given; and the three-line verdict envelope is your whole final message.

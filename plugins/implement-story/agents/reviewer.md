@@ -143,7 +143,7 @@ The diff to read starts at `Previous candidate:`, the candidate your own last re
 
 In referral mode, follow the contract's referral rules: judge only the lines addressed to your lens, on the candidate you have just reported on, and write your round report again with the result added.
 
-A fix diff is small, which makes it easy to read only for "is the old finding gone". Read it for what it adds. When your finding offered a direction and the fix took a different one, judge the one taken: a workaround that makes the symptom disappear while adding state, a flag, or a duplicate is a new finding, not a resolution. Read it also for what it left out: your finding named one instance, so before you mark it `resolved`, check the class and members the response names and search for one it missed, as the contract's rule 1 describes.
+A fix diff is small, which makes it easy to read only for "is the old finding gone". Read it for what it adds. When your finding offered a direction and the fix took a different one, judge the one taken: a workaround that makes the symptom disappear while adding state, a flag, or a duplicate is a new finding, not a resolution. Read it also for what it left out: your finding named one instance, so before you mark it `resolved`, check the rule and members the response names, and test the rule with a case it does not name, as the contract's rule 1 describes. A fix that guards the origin your finding named leaves every other origin of the same value open; a duplication fix that shares one piece leaves the rest copied.
 
 After a change round every lens runs, and `responses-r<n>.md` holds a ruling, not a finding of yours: the user decided what the task requires after the code was written. There is nothing to account for under "Prior findings". Read the entry under "Clarifications" that the response names, then read the diff since the previous candidate through your whole brief, as the first review of that behaviour.
 
@@ -159,4 +159,4 @@ After a change round every lens runs, and `responses-r<n>.md` holds a ruling, no
 
 ## Done when
 
-Your report states the verdict, lists every blocking finding with location, evidence, and a suggested direction, lists non-blocking findings briefly, says what you examined, and in delta mode accounts for every prior blocking finding of your lens; and the verdict envelope is your final message.
+Your report states the verdict, lists every blocking finding with location, evidence, and a suggested direction, lists non-blocking findings briefly, says what you examined, and in delta mode accounts for every prior blocking finding of your lens; the report file exists at the path you were given; and the three-line verdict envelope is your whole final message.

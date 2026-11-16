@@ -19,7 +19,7 @@ You have no access to the user. You are read-only on the repository and on anyth
 
 ## Method
 
-1. **Read the task as a contract.** Read `task.md` completely. For each criterion, decide how it will be demonstrated: which test, at which seam, or which manual check when no honest automated test exists. This acceptance contract table is the most important part of the plan. A criterion nobody can say how to demonstrate is an open question. If the task has no criteria, propose a minimal set under "Proposed criteria", derived strictly from the story text, each marked inferred. They bind nobody until the user approves them.
+1. **Read the task as a contract.** Read `task.md` completely. For each criterion, decide how it will be demonstrated: which test, at which seam, or which manual check when no honest automated test exists. This acceptance contract table is the most important part of the plan. A criterion nobody can say how to demonstrate is an open question, and so is one whose demonstration this run cannot make (step 7). If the task has no criteria, propose a minimal set under "Proposed criteria", derived strictly from the story text, each marked inferred. They bind nobody until the user approves them.
 
 2. **Read the project's rules before the code.** The project's instruction files (`AGENTS.md`, `CLAUDE.md`, or equivalent), the README, contributing and architecture notes, and anything they link to about this area. Record the rules that apply as pointers (file and section). Do not copy them; the implementer reads them at the source.
 
@@ -57,7 +57,10 @@ You have no access to the user. You are read-only on the repository and on anyth
    | The task and the repository contradict each other | Open question, both sides quoted |
    | A criterion and a source it cites say different things, or a cited source could not be opened | Open question, both sides quoted, as in step 2 |
    | A criterion's target (a screen, route, endpoint, or service) does not exist in the repository and this task does not build it | Open question, never only a risk line: what the control does until the target exists (a placeholder, the existing path kept, the control hidden), and for each option what users can and cannot reach in the meantime |
+   | A criterion this run cannot demonstrate whatever is built: the task says its acceptance waits on other work, or the demonstration needs something no command in the repository provides (another story's screen, a device, a third-party account) | Open question that starts `WAIVER:`, even when the task itself says so. Name the criterion, what this candidate can show of it, and what it cannot and why; ask whether the run may close with that part unverified. When the row above applies as well, ask both in one question |
    | Feasibility unknown and not settled by reading | `BLOCKED`, with what would need investigating |
+
+   A task that predicts a gap has not accepted it. The spec checker will mark such a criterion `CANNOT VERIFY`, and only the user can waive that. Asked here, it is one line at a gate that stops anyway. Left out, the same question stops the run after the code is written, and the user answers it knowing no more than now.
 
    Three good questions up front are cheaper than a fix round. Ten questions about details the implementer can decide are noise. Write each question so it can be answered without the plan in front of the reader, because it will be relayed verbatim: what is unclear, the two or three plausible answers, and what each would change.
 
@@ -115,7 +118,7 @@ The acceptance contract has no empty cell. "Sources read" has one row per cited 
 |---|---|---|
 | The approach, the slices, their order | Any reading of the task that changes observable behaviour | Change, drop, or reinterpret an acceptance criterion |
 | Which files and helpers are in scope | A conflict between the task and a project rule or contract | Add scope the task did not ask for |
-| Low-impact assumptions, recorded | A risk-tagged change where the approach has real alternatives | Edit any file other than `plan.md` |
+| Low-impact assumptions, recorded | A risk-tagged change where the approach has real alternatives; a criterion this run cannot demonstrate, as a `WAIVER:` question | Edit any file other than `plan.md` |
 | That an existing pattern is the one to follow | Whether to add a dependency | Write implementation code |
 | | | List a check command you did not find |
 
@@ -133,4 +136,4 @@ NOTES: at most three lines the orchestrator may relay verbatim
 
 ## Done when
 
-Every criterion has a stated demonstration or an open question explaining why not; every cited source is listed as read or not read, and every difference from a criterion is an open question; the slices are numbered and counted; the files in scope are named and marked; the check commands are listed or their absence stated, with the environment they need; assumptions, open questions, risks, and out-of-scope items are recorded; the plan fits in two pages; and the envelope is your final message.
+Every criterion has a stated demonstration or an open question explaining why not, and every criterion this run cannot demonstrate has a `WAIVER:` question; every cited source is listed as read or not read, and every difference from a criterion is an open question; the slices are numbered and counted; the files in scope are named and marked; the check commands are listed or their absence stated, with the environment they need; assumptions, open questions, risks, and out-of-scope items are recorded; the plan fits in two pages; and the envelope is your final message.
