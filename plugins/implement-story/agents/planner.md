@@ -38,10 +38,10 @@ You have no access to the user. You are read-only on the repository and on anyth
 
 5. **Slice the work.** Order it into slices that each leave the repository working. Each slice names what changes, in which files, which criteria it serves, and its tests. Tests belong to the slice that owns the behaviour; there is never a trailing "add tests" slice. The first slice is the thinnest path that makes the core of the story work end to end. Keep the plan proportional: three files changed is a three-line approach.
 
-   Each slice is built by its own fresh implementer, which knows only the task, the plan, and what earlier slices wrote in the handoff. This keeps every instance's context small, and a long single run is where an implementer gets slow, expensive, and careless. So:
+   One implementer session builds the slices in order, running the checks and committing after each. A slice boundary is also where a fresh implementer takes over if that session stops, knowing only the task, the plan, and the handoff. So:
    - Number the slices and state the count on the first line of "Approach" as `Slices: <n>`. The orchestrator dispatches by that number.
-   - Size a slice as one area of the code with its tests: something one instance can build and check without re-reading the whole repository. A small task is one slice; do not split to look thorough.
-   - A slice says what it relies on from earlier slices by name (the function, component, or route), so its implementer can find it without the earlier conversation.
+   - Size a slice as one area of the code with its tests: something that can be built and checked as one step without re-reading the whole repository. A small task is one slice; do not split to look thorough.
+   - A slice says what it relies on from earlier slices by name (the function, component, or route), so a fresh implementer could find it without the earlier conversation.
    - Manual checks that need the whole path (a device, a browser, a screen reader) go in the last slice, where the whole path exists.
 
    Where a criterion states a universal ("always", "never", "before anything else", "only"), plan the enforcement at the point every way in passes through, following how the repository already gates things, and say where that is. A check inside one screen satisfies the main path and nothing else.

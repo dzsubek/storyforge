@@ -1,6 +1,6 @@
 # Implement Story
 
-Take one story-sized task from description to a reviewed, verified change on a local branch. A coordinator runs a fixed procedure. A planner writes a short plan in slices, a fresh implementer builds each slice test-first, the coordinator runs the project's checks itself, and then independent verifiers check the result blind: a spec checker goes criterion by criterion, and four lens reviewers each look for one kind of defect. Serious findings go back to a fresh implementer for at most two fix rounds, and the verifiers whose findings were answered check the fixes.
+Take one story-sized task from description to a reviewed, verified change on a local branch. A coordinator runs a fixed procedure. A planner writes a short plan in slices, one implementer session builds the slices in order test-first, the coordinator runs the project's checks itself, and then independent verifiers check the result blind: a spec checker goes criterion by criterion, and four lens reviewers each look for one kind of defect. Serious findings go back to the same implementer session for at most two fix rounds, and the verifiers whose findings were answered check the fixes. Every verifier starts fresh, in every round.
 
 ```bash
 claude plugin install implement-story@dzsubek-hu-agent-mp
@@ -29,13 +29,13 @@ To resume an interrupted run, start the orchestrator again with no task, or with
 | Intake | Orchestrator | `task.md`: the task word for word, with numbered acceptance criteria. If the story cites sources the session cannot reach, you are asked before planning starts |
 | Plan | Planner | `plan.md`: approach, files, how each criterion will be shown, the cited sources it read, check commands and the environment they need, risks |
 | Plan gate | You, only if needed | Answers to open questions, approval of inferred criteria, acknowledgement of risks |
-| Implement | One fresh implementer per plan slice, in order | Local commits and `handoff.md` |
+| Implement | One implementer session, every plan slice in order | A local commit and a `handoff.md` section per slice |
 | Checks | Orchestrator | The services and build outputs the plan lists are started, then the plan's check commands run, judged by exit codes only |
 | Verify | Spec checker, four reviewers, custom verifiers, in parallel | One findings report each. They use the environment the orchestrator already has running. What one verifier sees outside its own question goes to the verifier that owns it, which judges it in the same round |
-| Fix | Fresh implementer, at most twice | New commits, a response to every blocking finding, and the cheap non-blocking ones fixed in the same pass. A fix covers every place the defect occurs, not only the one the finding named. Its response names the rule the defect broke, where the rule is now enforced, and the places covered |
+| Fix | The same implementer session, at most twice | New commits, a response to every blocking finding, and the cheap non-blocking ones fixed in the same pass. A fix covers every place the defect occurs, not only the one the finding named. Its response names the rule the defect broke, where the rule is now enforced, and the places covered |
 | Re-verify | Spec checker, correctness reviewer, and every verifier whose finding was answered | Each fix read as new code, and tested with a case its response does not name. A verifier that sat out a round reads every fix made since its last report |
 | Gaps | You, once, after the fixes, and after the polish round when the setting is `auto` | A waiver or a stop for each thing no verifier could check. A verifier lists only what belongs to its own question, not what another verifier is there to check |
-| Polish | Fresh implementer, at most once | The Minor and Nit findings still open, by the `Polish round` setting |
+| Polish | The same implementer session, at most once | The Minor and Nit findings still open, by the `Polish round` setting |
 | Close | Orchestrator | Final report, with every risk the plan recorded |
 
 The plan gate stops only when the plan has open questions, proposes acceptance criteria that the story did not state, or touches a risk area (auth, payments, data migration or deletion, public contracts, anything irreversible). Otherwise you get a one-line notice and the run continues. A criterion whose target another story will build (a screen or service that does not exist yet) is always an open question: you decide what the control does in the meantime.
@@ -76,8 +76,10 @@ You can add an optional section to the project's `AGENTS.md` or `CLAUDE.md`. Eve
 - Fix round cap: 2
 - Polish round: auto
 - Branch naming: feat/<ticket>-<slug>
-- Models: planner=fable, implementer=sonnet
+- Models: planner=opus, implementer=sonnet, spec-checker=opus, reviewer=opus
 ```
+
+Give the spec checker and the reviewers a model other than the implementer's. A model tends to favour work like its own, and a different reader is the cheap counter to that.
 
 The default lenses are `correctness`, `readability`, `architecture`, and `security`. `performance` is off by default, because most stories have no performance surface and the correctness lens covers the performance defects that do occur; add it under "Extra lenses" for work where scale matters. All roles read the project's own instruction files for conventions and commands, so those files should name the exact test, lint, and build commands.
 
@@ -107,7 +109,7 @@ Preloading `verifier-contract` gives it the shared rules: what it receives, that
 
 Plugin agents cannot set their own permission mode, so your session's permission rules apply to every role. For an attended run with fewer prompts, allow the project's check commands and plain `git` read commands. The implementer also needs file edits and `git add` and `git commit`.
 
-Roles must start with a fresh context. If your settings let the main session fork the conversation into sub-agents, deny forks for these runs:
+Roles must start with a fresh context. The one session the orchestrator continues is the implementer's: it sends each fix, change, and polish round to the session that built round 0, with `SendMessage`. The planner and every verifier start fresh every time. If the implementer session cannot be continued, the run was interrupted, or the host compacted its context, the orchestrator starts a fresh implementer from `task.md`, `plan.md`, `handoff.md`, and the run's commits. If your settings let the main session fork the conversation into sub-agents, deny forks for these runs:
 
 ```json
 { "permissions": { "deny": ["Agent(fork)"] } }
@@ -123,11 +125,11 @@ Role bodies are written against capabilities, not tools. Only the frontmatter is
 
 | Agent | Claude Code frontmatter | Capability it stands for |
 |---|---|---|
-| `orchestrator` | inherits all tools except `Edit`, `Write`, `NotebookEdit`, and the unused tools below | Sub-agents, shell, asking the user, and whatever tracker access the session has. It writes run files through the shell. |
+| `orchestrator` | inherits all tools except `Edit`, `Write`, `NotebookEdit`, and the unused tools below | Sub-agents, continuing one sub-agent's session (the implementer's), shell, asking the user, and whatever tracker access the session has. It writes run files through the shell. |
 | `planner` | inherits all tools except `Edit`, `NotebookEdit`, `Agent`, and the unused tools below | Read, search, shell, the session's lookup tools, and writing its one file. It cannot start agents. |
 | `implementer` | inherits all tools except `Agent` and the unused tools below | Everything except starting agents |
 | `reviewer`, `spec-checker` | inherits all tools except `Edit`, `NotebookEdit`, `Agent`, and the unused tools below; preloaded `verifier-contract` | Read, search, shell, the session's lookup tools, and writing its report. It cannot start agents. |
 
-Every role also denies tools it never uses: `Artifact`, `ArtifactData`, `ArtifactComments`, `SendMessage`, `EnterWorktree`, and `ExitWorktree`. The orchestrator additionally denies `DesignSync`, `RemoteTrigger`, `CronCreate`, `CronDelete`, `CronList`, `ScheduleWakeup`, `EnterPlanMode`, and `ExitPlanMode`. These stand for no capability. They are denied because a tool's definition is sent with every step, and these were about a quarter of each agent's starting context.
+Every role also denies tools it never uses: `Artifact`, `ArtifactData`, `ArtifactComments`, `SendMessage` (all but the orchestrator, which uses it only to continue the implementer), `EnterWorktree`, and `ExitWorktree`. The orchestrator additionally denies `DesignSync`, `RemoteTrigger`, `CronCreate`, `CronDelete`, `CronList`, `ScheduleWakeup`, `EnterPlanMode`, and `ExitPlanMode`. These stand for no capability. They are denied because a tool's definition is sent with every step, and these were about a quarter of each agent's starting context.
 
-For another host, map the same capabilities, check that a sub-agent starts with a fresh context rather than a copy of the parent conversation, and check that the contract skill can be preloaded. If it cannot be preloaded, inline the skill into both verifier definitions.
+For another host, map the same capabilities, check that a sub-agent starts with a fresh context rather than a copy of the parent conversation, and check that the contract skill can be preloaded. If it cannot be preloaded, inline the skill into both verifier definitions. A host that cannot continue a sub-agent's session still runs the procedure: the orchestrator's first case for a fresh implementer then applies to every later round, so each fix, change, and polish round gets a fresh implementer.
