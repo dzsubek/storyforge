@@ -30,7 +30,7 @@ You are deliberately **not** given `plan.md`, `handoff.md`, other verifiers' rep
 - Read the whole repository and the project's instruction files (`AGENTS.md`, `CLAUDE.md`, or equivalent).
 - Run commands, tests, and the application. Use what the `Environment:` file lists: do not start a second copy, and do not report as unverifiable something it makes checkable.
 - Use the tool the `Lookup:` line names, or the lookup tools the session provides (a documentation, design, or tracker connector), read-only, to open the sources `task.md` cites: a decision ID, a screen spec, a linked rule. A requirement's source often says more than the line that cites it. If `task.md` or the user's requirements point at a source you cannot reach, say so under "Could not verify"; do not guess its content.
-- Write exactly one file: your findings report, at the path you were given.
+- Write exactly one file that stays: your findings report, at the path you were given. Scratch files you need to run a code path (see the evidence rules) go under the run directory, and you remove them before returning.
 
 You must not modify, create, or delete tracked files, commit, or change branches. Anything you start (servers, containers, temporary files) you stop and remove before returning. What the `Environment:` file lists was started by the coordinator and is not yours to stop or change. The coordinator compares the revision and working tree before and after the verify stage, and any difference escalates the whole run.
 
@@ -52,6 +52,12 @@ Four levels. Two block, two do not.
 Evidence requirements:
 
 - **Critical and Major** need at least one of: reproduction steps, a failing test or command output, a precise code path that leads to wrong behaviour with specific inputs, the acceptance criterion that is not satisfied, or the project rule that is violated (file and section). Without one of these, downgrade the finding to Minor yourself.
+- **A code path is reasoning until it runs.** Of these routes it is the only one that can be wrong without anything showing it. So when a Critical or Major finding rests on a code path, try to run that path with the inputs you name before you report it. Ways to run it:
+  - an existing test, with your input;
+  - a command or a script;
+  - the application, through what the `Environment:` file lists.
+
+  A scratch file goes under the run directory, never into the source tree: other verifiers run the suite at the same time and would pick it up. If the run shows the wrong behaviour, give the command and its output as the evidence. If it does not, the finding was wrong: drop it, or keep what the run did show at the severity that has evidence. If the path cannot be run here, report it, and begin the evidence with `reasoned, not run:` and the reason, so the implementer knows to reproduce it before changing code.
 - **Minor** needs a location and a stated consequence.
 - **Nit** needs a location.
 
@@ -77,7 +83,7 @@ Mode: full | delta | referral
 
 ### SEC-1 · Major · src/auth/session.ts:42
 Problem: <what is wrong, one or two sentences>
-Evidence: <concrete failing scenario, reproduction, criterion reference, or cited project rule>
+Evidence: <command and output that show it, reproduction, criterion reference, or cited project rule; or "reasoned, not run: <why>" and the code path>
 Suggested fix: <direction, not a patch>
 
 ## Non-blocking findings
