@@ -1,4 +1,4 @@
-# dzsubek-hu-agent-mp
+# storyforge
 
 A Claude Code marketplace for custom plugins.
 
@@ -19,7 +19,7 @@ claude plugin marketplace add ./
 Install a plugin by its name and this marketplace:
 
 ```bash
-claude plugin install <plugin>@dzsubek-hu-agent-mp
+claude plugin install <plugin>@storyforge
 ```
 
 ## Plugins
@@ -29,7 +29,7 @@ claude plugin install <plugin>@dzsubek-hu-agent-mp
 Break a specification into epics, then into implementation-ready stories, without dropping or inventing requirements.
 
 ```bash
-claude plugin install break-down@dzsubek-hu-agent-mp
+claude plugin install break-down@storyforge
 ```
 
 | Command | What it does |
@@ -44,7 +44,7 @@ Run epic-creator first when the input is a whole specification. Run story-creato
 Take one story-sized task from description to a reviewed, verified local branch. A coordinator plans the work, has one implementer build it test-first, runs the project's checks itself, and has independent verifiers check the result blind. A spec checker goes criterion by criterion, and five reviewers each cover one lens: correctness, readability, architecture, security, or performance.
 
 ```bash
-claude plugin install implement-story@dzsubek-hu-agent-mp
+claude plugin install implement-story@storyforge
 ```
 
 ```bash

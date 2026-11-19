@@ -3,7 +3,7 @@
 Take one story-sized task from description to a reviewed, verified change on a local branch. A coordinator runs a fixed procedure. A planner writes a short plan in slices, one implementer session builds the slices in order test-first, the coordinator runs the project's checks itself, and then independent verifiers check the result blind: a spec checker goes criterion by criterion, and four lens reviewers each look for one kind of defect. Serious findings go back to the same implementer session for at most two fix rounds, and the verifiers whose findings were answered check the fixes. Every verifier starts fresh, in every round.
 
 ```bash
-claude plugin install implement-story@dzsubek-hu-agent-mp
+claude plugin install implement-story@storyforge
 ```
 
 ## Start a run
