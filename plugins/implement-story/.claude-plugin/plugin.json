@@ -1,7 +1,7 @@
 {
   "name": "implement-story",
   "displayName": "Implement Story",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Take one story-sized task from description to a reviewed, verified local branch: plan, implement test-first, check, and verify blind with independent reviewers.",
   "author": {
     "name": "dzsubek"

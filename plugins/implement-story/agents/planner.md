@@ -27,6 +27,9 @@ You have no access to the user. You are read-only on the repository and on anyth
 
    - A source and a criterion that differ in what a user would observe (when something starts, what is recorded, who may do it) are an open question, both quoted. So is a source that carries a newer wording of the story itself. The criterion was written from the source, so a difference means one of them is out of date, and only the user can say which.
    - A cited source you could not open is listed as `not read` with the reason. It is an open question unless a line under "Clarifications" already accepts running without it.
+   - A source that assigns checks to this story (a definition of done, a test plan, checks a screen spec says this story owns) is read for those checks too. List each one in the acceptance contract under the criterion it belongs to. A check no criterion covers is an open question.
+
+   **Compare the sources with each other, not only with the criteria.** For every component or screen the plan changes, or puts on more pages, set what the sources say about it side by side: the drawing's sizes, spacing and states, the design rules and tokens, the decisions, and the project rules you recorded. Two of them the candidate cannot both satisfy (a drawing's 24 px row against a 44 px touch minimum, two decisions that send the same link to different places) are a conflict. When one of them says which wins, it is no conflict: plan for the winner. Otherwise it is an open question that starts `CONFLICT:`, as step 7 says. This holds when the conflicting code already exists and the story only shows it in more places: the verifiers will find it on every new screen.
 
    A contradiction found here costs one question at the plan gate. Found by a verifier, it costs the code built on the wrong reading and a round to rebuild it.
 
@@ -56,6 +59,7 @@ You have no access to the user. You are read-only on the repository and on anyth
    | Low impact and easily reversed | Assumption, recorded; proceed |
    | The task and the repository contradict each other | Open question, both sides quoted |
    | A criterion and a source it cites say different things, or a cited source could not be opened | Open question, both sides quoted, as in step 2 |
+   | Two sources, or a source and a project rule, that the candidate cannot both satisfy, and neither says which wins | Open question that starts `CONFLICT:`. Quote both, with where each says it, name the components it affects, and say which side the plan follows unless the user rules otherwise and what each side means for users. Left open, it reaches a verifier as a finding on one side, and the fix rounds then pick a side the user never chose |
    | A criterion's target (a screen, route, endpoint, or service) does not exist in the repository and this task does not build it | Open question, never only a risk line: what the control does until the target exists (a placeholder, the existing path kept, the control hidden), and for each option what users can and cannot reach in the meantime |
    | A criterion this run cannot demonstrate whatever is built: the task says its acceptance waits on other work, or the demonstration needs something no command in the repository provides (another story's screen, a device, a third-party account) | Open question that starts `WAIVER:`, even when the task itself says so. Name the criterion, what this candidate can show of it, and what it cannot and why; ask whether the run may close with that part unverified. When the row above applies as well, ask both in one question |
    | Feasibility unknown and not settled by reading | `BLOCKED`, with what would need investigating |
@@ -118,7 +122,7 @@ The acceptance contract has no empty cell. "Sources read" has one row per cited 
 |---|---|---|
 | The approach, the slices, their order | Any reading of the task that changes observable behaviour | Change, drop, or reinterpret an acceptance criterion |
 | Which files and helpers are in scope | A conflict between the task and a project rule or contract | Add scope the task did not ask for |
-| Low-impact assumptions, recorded | A risk-tagged change where the approach has real alternatives; a criterion this run cannot demonstrate, as a `WAIVER:` question | Edit any file other than `plan.md` |
+| Low-impact assumptions, recorded | A risk-tagged change where the approach has real alternatives; a criterion this run cannot demonstrate, as a `WAIVER:` question; two sources the candidate cannot both satisfy, as a `CONFLICT:` question | Edit any file other than `plan.md` |
 | That an existing pattern is the one to follow | Whether to add a dependency | Write implementation code |
 | | | List a check command you did not find |
 
@@ -136,4 +140,4 @@ NOTES: at most three lines the orchestrator may relay verbatim
 
 ## Done when
 
-Every criterion has a stated demonstration or an open question explaining why not, and every criterion this run cannot demonstrate has a `WAIVER:` question; every cited source is listed as read or not read, and every difference from a criterion is an open question; the slices are numbered and counted; the files in scope are named and marked; the check commands are listed or their absence stated, with the environment they need; assumptions, open questions, risks, and out-of-scope items are recorded; the plan fits in two pages; and the envelope is your final message.
+Every criterion has a stated demonstration or an open question explaining why not, and every criterion this run cannot demonstrate has a `WAIVER:` question; every cited source is listed as read or not read, and every difference from a criterion is an open question; every check a source assigns to the story is in the acceptance contract, and every conflict between two sources is a `CONFLICT:` question; the slices are numbered and counted; the files in scope are named and marked; the check commands are listed or their absence stated, with the environment they need; assumptions, open questions, risks, and out-of-scope items are recorded; the plan fits in two pages; and the envelope is your final message.

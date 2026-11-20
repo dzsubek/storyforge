@@ -31,10 +31,10 @@ To resume an interrupted run, start the orchestrator again with no task, or with
 | Plan gate | You, only if needed | Answers to open questions, approval of inferred criteria, acknowledgement of risks |
 | Implement | One implementer session, every plan slice in order | A local commit and a `handoff.md` section per slice |
 | Checks | Orchestrator | The services and build outputs the plan lists are started, then the plan's check commands run, judged by exit codes only |
-| Verify | Spec checker, four reviewers, custom verifiers, in parallel | One findings report each. They use the environment the orchestrator already has running. What one verifier sees outside its own question goes to the verifier that owns it, which judges it in the same round |
+| Verify | Spec checker, four reviewers, custom verifiers, in parallel | One findings report each. They use the environment the orchestrator already has running. What one verifier sees outside its own question goes to the verifier that owns it. On a round that passed, that verifier judges it in the same round. On a round that failed, the implementer gets it with the findings, and the owner judges it in the next round |
 | Fix | The same implementer session, at most twice | New commits, a response to every blocking finding, and the cheap non-blocking ones fixed in the same pass. A fix covers every place the defect occurs, not only the one the finding named. Its response names the rule the defect broke, where the rule is now enforced, and the places covered |
 | Re-verify | Spec checker, correctness reviewer, and every verifier whose finding was answered | Each fix read as new code, and tested with a case its response does not name. A verifier that sat out a round reads every fix made since its last report |
-| Gaps | You, once, after the fixes, and after the polish round when the setting is `auto` | A waiver or a stop for each thing no verifier could check. A verifier lists only what belongs to its own question, not what another verifier is there to check |
+| Gaps and conflicts | You, once, after the fixes. A conflict is asked before the polish round, a gap after it when the setting is `auto` | A waiver or a stop for each thing no verifier could check. A ruling or a stop for each pair of sources the candidate cannot both satisfy. A verifier lists only what belongs to its own question, not what another verifier is there to check |
 | Polish | The same implementer session, at most once | The Minor and Nit findings still open, by the `Polish round` setting |
 | Close | Orchestrator | Final report, with every risk the plan recorded |
 
@@ -44,9 +44,11 @@ A criterion the run cannot demonstrate at all is asked here too, as a question m
 
 A source that says something different from the criterion citing it is an open question too, as is a cited source the planner could not open. The contradiction costs one question here; found after the code is written, it costs a round.
 
+Two sources that the change cannot both satisfy, such as a drawing's row height and a design rule's minimum touch target, are asked here as a question marked `CONFLICT:`, unless one of them says which wins. Your answer is recorded as a ruling, and the verifiers check the change against it. A conflict a verifier finds later is asked once, before the polish round, so that no fix picks a side you never chose. If your ruling picks the side the change does not follow, a change round builds it.
+
 If one of your answers after the plan gate changes what the candidate must do, such as a ruling between two readings of a criterion, the orchestrator runs a **change round**. It does not count against the fix-round cap, and every verifier reads its result.
 
-With `Polish round: ask` you are asked once, before the close, which of the open Minor and Nit findings to fix; with `auto` every open Minor is fixed without a question, before you are asked about anything no verifier could check; with `never` they are only listed. The polish round does not count against the cap. After a report you can still ask for named non-blocking findings to be fixed ("fix COR-3 and ARCH-1"). That runs as a normal fix round and counts against the cap.
+With `Polish round: ask` you are asked once, before the close, which of the open Minor and Nit findings to fix; with `auto` every open Minor is fixed without a question, after any conflict between sources is ruled and before you are asked about anything no verifier could check; with `never` they are only listed. The polish round does not count against the cap. After a report you can still ask for named non-blocking findings to be fixed ("fix COR-3 and ARCH-1"). That runs as a normal fix round and counts against the cap.
 
 ## Outcomes
 
@@ -54,7 +56,7 @@ With `Polish round: ask` you are asked once, before the close, which of the open
 |---|---|
 | `READY_FOR_REVIEW` | Checks pass, every criterion is met with evidence, and no Critical or Major finding is open. Review the branch and merge it yourself. |
 | `READY_WITH_EXCEPTIONS` | As above, except for gaps you waived: a criterion or check that could not be verified here, such as a target screen that does not exist yet or a device nobody could run. The report lists the exceptions first. |
-| `NEEDS_HUMAN` | A decision is yours: a disputed finding, exhausted fix rounds, an ambiguity, or an unverified item you did not waive. The report lists the options. |
+| `NEEDS_HUMAN` | A decision is yours: a disputed finding, exhausted fix rounds, an ambiguity, an unverified item you did not waive, or a conflict between sources you did not rule on. The report lists the options. |
 | `BLOCKED` | Information, access, or a prerequisite is missing, or the task is larger than one story. |
 
 A skipped check, a verifier that failed to run, or a criterion nobody could verify is never counted as a pass. Only you can waive one, and you are asked once: at the plan gate when the gap can be seen from the story, otherwise after the fix rounds, not before them. A verifier that could check part of its question still gives a verdict on that part, so one unverified criterion does not hold up a fix round that is needed anyway.

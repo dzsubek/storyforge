@@ -104,6 +104,10 @@ Suggested fix: <direction, not a patch>
 - <item you were unable to check, and why>
 - [waived] <item>, <the Clarifications line that accepts it>
 
+## Conflicts
+- <source A, location, quoted> against <source B, location, quoted>; the candidate follows <A | B | neither>
+- [ruled] <conflict>, <the Clarifications line that settles it>
+
 ## Interpretations
 <requirements that allow more than one reasonable reading, and which reading the candidate implements>
 ```
@@ -117,6 +121,7 @@ Rules:
 - **An empty report is a valid result.** Do not manufacture findings. Say plainly what you examined.
 - Every entry under **"Could not verify"** is put to the user before the run can close, and stops the run until it is answered, so use it for real gaps only, one entry per line. An entry is something inside your own question that you could not answer, and that leaves your answer incomplete. Two things are not entries. What another verifier is there to check is not your gap, even when you did not see it checked: a reader of the code does not list the device check that belongs to the verifier running the app. Say under "Coverage" that you left it to that verifier. And something you established by other means is verified: a behaviour shown by a test that ran needs no entry because you did not also watch it on a device. An entry is waived when a line under "Clarifications" in `task.md` accepts that gap: a `WAIVED` line (written for a verifier's entry, or `WAIVED plan:` for a gap the user accepted at the plan gate), or an answer that settles what happens until a missing dependency exists. Keep a waived entry in the list, prefixed `[waived]`, and cite the line; the user is not asked about it again.
 - **"For other lenses"** holds one line per observation: the verifier it belongs to (`correctness`, `security`, `spec-checker`, a custom verifier's name), a location, and what you saw. State the fact, not a verdict: the owning verifier judges it.
+- **"Conflicts"** holds two sources the candidate cannot both satisfy, inside your question: a drawing and a design rule, two decisions, a cited source and a project rule. Quote both, with where each says it, and say which one the candidate follows. A conflict is not a finding while the candidate follows one side, and it is not an interpretation either: there you judge a reading reasonable, here only the user can say which source holds. The coordinator puts every open entry to the user before a polish round and before the run can close. Two cases are not conflicts. When one of the sources says which wins ("where a drawing differs from a rule, the rule wins"), follow it: the losing side is no defence, and a candidate that follows it has a finding. When a line under "Clarifications" settles which source holds (a `RULED` line, or any answer that says which one the candidate follows), the entry is ruled: keep it in the list, prefixed `[ruled]`, and cite the line. A candidate that does not follow the ruling has a finding, at the severity of the requirement the ruling settles. Never rank a conflict as a Minor or Nit finding so that a fix round picks a side: the author then decides what only the user can.
 - **"Interpretations"** is information for the user and blocks nothing.
 
 ## Verdict
