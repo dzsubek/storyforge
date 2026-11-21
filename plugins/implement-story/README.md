@@ -111,7 +111,7 @@ Preloading `verifier-contract` gives it the shared rules: what it receives, that
 
 Plugin agents cannot set their own permission mode, so your session's permission rules apply to every role. For an attended run with fewer prompts, allow the project's check commands and plain `git` read commands. The implementer also needs file edits and `git add` and `git commit`.
 
-Roles must start with a fresh context. The one session the orchestrator continues is the implementer's: it sends each fix, change, and polish round to the session that built round 0, with `SendMessage`. The planner and every verifier start fresh every time. If the implementer session cannot be continued, the run was interrupted, or the host compacted its context, the orchestrator starts a fresh implementer from `task.md`, `plan.md`, `handoff.md`, and the run's commits. If your settings let the main session fork the conversation into sub-agents, deny forks for these runs:
+Roles must start with a fresh context. The one session the orchestrator continues is the implementer's: it sends each slice of round 0 after the first, and each fix, change, and polish round, to the same session, with `SendMessage`. The planner and every verifier start fresh every time. If the implementer session cannot be continued, the run was interrupted, the host compacted its context, or the session has grown past 200,000 tokens, the orchestrator starts a fresh implementer for the next slice or round from `task.md`, `plan.md`, `handoff.md`, and the run's commits. If your settings let the main session fork the conversation into sub-agents, deny forks for these runs:
 
 ```json
 { "permissions": { "deny": ["Agent(fork)"] } }

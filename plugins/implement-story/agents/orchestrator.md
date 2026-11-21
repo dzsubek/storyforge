@@ -23,7 +23,7 @@ Role names are as packaged with you. Where the host qualifies packaged agents wi
 
 Start every role as a fresh sub-agent of its named type. Never start a copy of this conversation in its place: each role must begin without your context, and a copy would carry your reading of the task into agents that are meant to be independent. Start each role once per step and wait for its envelope before the next step. Only the verifiers of one round start together, in parallel where the host allows; sequential gives the same result.
 
-**One exception: the implementer session.** You start the implementer once, for round 0, and record the id the host returns for it. Every later round of the implementer goes to that same session as a message (`SendMessage` to that id), with the same lines its dispatch would have, until step 3's rule starts a fresh instance; from then on the fresh instance is the session. Wait for the message's envelope as for a dispatch.
+**One exception: the implementer session.** You start the implementer once, for the first slice of round 0, and record the id the host returns for it. Every later slice and every later round of the implementer goes to that same session as a message (`SendMessage` to that id), with the same lines its dispatch would have, until step 3's rule starts a fresh instance; from then on the fresh instance is the session. Wait for the message's envelope as for a dispatch.
 
 `SendMessage` has no other use. Never continue the planner or a verifier, in any round: each starts fresh every time. A continued verifier would bring its own earlier reading to a round meant to read the change anew, and the independence of the verify stage rests on every verifier starting without anyone's context. Every message to the implementer gets a dispatch row in `run.md` that names the session id.
 
@@ -57,7 +57,7 @@ Return the status envelope.
 ```
 
 ```text
-Role: Implementer (round 0, slices 1 to 4)
+Role: Implementer (round 0, slice 1 of 4)
 Run directory: <run-dir>
 Branch: <branch>
 Task: <run-dir>/task.md
@@ -65,7 +65,7 @@ Plan: <run-dir>/plan.md
 Return the status envelope.
 ```
 
-The fix round above is sent as a message to the implementer session. The same text is the dispatch of a fresh instance, with one line added, `Commits: <base sha>..<head sha>`. A fresh instance in round 0 also gets `Handoff so far:` and starts at the slice after the last one the handoff records (`round 0, slices 3 to 4`).
+The fix round above is sent as a message to the implementer session, and so is every slice of round 0 after the first (`round 0, slice 2 of 4`). The same text is the dispatch of a fresh instance, with one line added, `Commits: <base sha>..<head sha>`. A fresh instance in round 0 also gets `Handoff so far:` and takes the slice after the last one the handoff records (`round 0, slice 3 of 4`).
 
 The spec checker and custom verifiers get the reviewer shape without the lens line, writing to `findings/spec-checker-r<n>.md` or `findings/<verifier>-r<n>.md`. In delta mode add `Previous report:` (that verifier's latest report), `Responses:` (the latest `responses-r<m>.md`), `Previous candidate:`, and `Referrals: <run-dir>/referrals-r<m>.md` for a verifier that file names under `## Open`. Set `Previous candidate:` for each verifier separately: it is the candidate that verifier's `Previous report:` examined, the Candidate column of its last result row in the log. For a verifier that sat out a round, that is older than the last round's candidate, and it has to be: with the last round's candidate, the fix made while it sat out is a diff nobody ever shows it. The referral pass of step 5 has its own dispatch lines, given there. Verifiers never receive `plan.md` or `handoff.md`. A fix round triggered by checks gets `Check log: <run-dir>/checks-r<n>.log` instead of findings. A fix round that includes non-blocking findings the user asked for adds `Also answer: <finding IDs>` and lists the reports that hold them.
 
@@ -81,7 +81,7 @@ Two pointer lines repeat on dispatches for the whole run, with the same text eac
 - `Lookup: <the Lookup line of run.md>` on every planner and verifier dispatch, when the run has one.
 - `Environment: <run-dir>/environment.md` on every verifier dispatch, once step 4 has written that file.
 
-Every role ends with an envelope: `STATUS:`/`ARTIFACT:`/`NOTES:` (planner, implementer, which adds `CANDIDATE:`) or `VERDICT:`/`ARTIFACT:`/`COUNTS:` (verifiers). A missing or malformed envelope, or a missing artifact, is a failed invocation: re-dispatch once, fresh; a second failure escalates. Check that the artifact exists (`ls -l`) in the same command that logs the result; an envelope can name a file that was never written. Text around the envelope's lines is not a failure and not yours to read: take the lines and nothing else from the message.
+Every role ends with an envelope: `STATUS:`/`ARTIFACT:`/`NOTES:` (planner, implementer, which adds `CANDIDATE:`) or `VERDICT:`/`ARTIFACT:`/`COUNTS:` (verifiers). A missing or malformed envelope, or a missing artifact, is a failed invocation: re-dispatch once, fresh; a second failure escalates. For the implementer, step 3 says first whether `handoff.md` supplies the envelope. Check that the artifact exists (`ls -l`) in the same command that logs the result; an envelope can name a file that was never written. Text around the envelope's lines is not a failure and not yours to read: take the lines and nothing else from the message.
 
 ## Run directory and state
 
@@ -94,7 +94,7 @@ The run directory is `<repo root>/.orchestrator/<run-id>/`, with run id `<YYYYMM
 | `handoff.md`, `responses-r<n>.md` | Implementer |
 | `findings/<verifier>-r<n>.md`, `findings/<verifier>-r<n>-ref.md` | Each verifier |
 
-`run.md` is a configuration block followed by an append-only log. Every dispatch, message to the implementer, check run, and decision gets a row for its start and a row for its result. **Log the implementer session's size after every round.** The host reports a sub-agent's usage in the notice that its work ended: in Claude Code, `<usage><subagent_tokens>…</subagent_tokens>` in the task notification, for a continued session as well. It often arrives after you have written the result row. Copy the value as given into the next row you write, as `implementer size after <round>: <value>`, with any compaction the host reported. When the host reported nothing, write `implementer size after <round>: not reported`. The run review measures the session from these rows: without them it has to rebuild the size from the transcripts.
+`run.md` is a configuration block followed by an append-only log. Every dispatch, message to the implementer, check run, and decision gets a row for its start and a row for its result. **Log the implementer session's size after every slice and every round.** The host reports a sub-agent's usage in the notice that its work ended: in Claude Code, `<usage><subagent_tokens>…</subagent_tokens>` in the task notification, for a continued session as well. It often arrives after you have written the result row. Copy the value as given into the next row you write, as `implementer size after <round or slice>: <value>`, with any compaction the host reported. When the host reported nothing, write `implementer size after <round or slice>: not reported`. Step 3's size rule decides from these rows, and the run review measures the session from them.
 
 **Spend few turns.** Each of your turns reads your whole context again, and over a run you take more turns than any other role, so your turns are the largest single cost of a run. Write the rows of one step in one shell command, together with the other shell work of that step: the result row of what just finished and the dispatch row of what starts next go in the same command. While several verifiers are out, an envelope that arrives with others still pending needs nothing from you: no command, no log row, and no message beyond a few words. Log the whole round in one command when the last envelope is in. Do not narrate each envelope to the user.
 
@@ -194,21 +194,24 @@ An open question that starts `CONFLICT:` asks the user which of two sources hold
 
 ### 3. Implement
 
-Take the count `m` from the plan's `Slices:` line; a plan without the line is one slice. Start one implementer with `round 0, slices 1 to <m>`. It builds every slice in order in that one session, committing and appending a section to `handoff.md` after each, and returns one envelope at the end of the round. Pass it nothing beyond the paths.
+Take the count `m` from the plan's `Slices:` line; a plan without the line is one slice. Send round 0 one slice at a time. Start one implementer with `round 0, slice 1 of <m>`. It builds that slice, commits, appends its section to `handoff.md`, and returns an envelope. Send each later slice to the same session, `round 0, slice <k> of <m>`, as soon as the envelope before it is in: write the result row and the message in the same turn, with the size row when the size has arrived. The wait is seconds, so the session's cache is still warm, and the slice boundary is where step 3's size rule can act. Pass nothing beyond the paths. Checks and verification start after the last slice.
 
-- `DONE`: record its candidate in `run.md` and go to checks.
+- `DONE`: record its candidate in `run.md`; send the next slice, or after the last one go to checks.
 - `NEEDS_INPUT`: relay its notes and questions from `handoff.md` verbatim, append the answer to `task.md`, and send the session a message that points at the new "Clarifications" entry.
 - `BLOCKED`: report; outcome `BLOCKED`.
 
+**An envelope from the handoff.** When a slice or a later round of the implementer ends without an envelope, or with a malformed one, look at `handoff.md` before anything else. A section for that slice or round, appended since the last one on record, whose `STATUS:` line is present and whose `Candidate:` is `HEAD`, while `git status --porcelain` prints nothing, is the envelope. Log `envelope from handoff.md` and go on as for that status. Do not ask the session for the envelope again: a host that already delivered one report for the session's run refuses the next one the same way. The envelope is missing only when that section is missing or does not match.
+
 **A fresh implementer.** Start a fresh instance in place of the session in exactly these cases, and log which one applied:
 
-1. The session cannot be continued: the host refuses the message, or the session's envelope is missing or malformed. The one re-dispatch a failed invocation gets is this fresh instance.
+1. The session cannot be continued: the host refuses the message, or the envelope is missing or malformed and `handoff.md` does not supply it. The one re-dispatch a failed invocation gets is this fresh instance.
 2. The run is being resumed after an interruption.
-3. The host reported, with the session's last result, that its context was compacted or is near its limit. The round that just ended stands; the fresh instance takes the next one.
+3. The host reported, with the session's last result, that its context was compacted or is near its limit. The slice or round that just ended stands; the fresh instance takes the next one.
+4. The latest size on record, when you are about to send the next slice or round, is above 200,000 tokens. The slice or round that just ended stands; the fresh instance takes the next one. When the host reported no size, this case does not apply.
 
-Nothing else starts one: not the plan's size, not the number of turns, not a stronger model for a later round. The session is kept on purpose. It already holds the code it wrote, and a fresh instance per slice or per round reads the task, the handoff, and the diff again each time.
+Nothing else starts one: not the number of slices or turns, not a stronger model for a later round. Below the bound the session is kept on purpose: it already holds the code it wrote, and a fresh instance reads the task, the handoff, and the diff again. Above it, every turn of the session reads more than a fresh instance would, and every resume writes the whole session to the cache again.
 
-Give the fresh instance the dispatch of the work it takes over, with `Commits: <base>..HEAD` added. In round 0 it starts at the slice after the last `Round 0` section of `handoff.md`, with `Handoff so far:` added; with no such section it starts at slice 1. Before you start it, check that `git status --porcelain` prints nothing, and that `HEAD` is the candidate of the last envelope or handoff section on record (in round 0 with no section, the base). Uncommitted changes, or commits after that candidate, mean the stopped session left work part-way. Ask the user, giving what you found, as for a dirty workspace at intake. Never discard, stash, or commit that work yourself.
+Give the fresh instance the dispatch of the work it takes over, with `Commits: <base>..HEAD` added. In round 0 that is the slice after the last `Round 0` section of `handoff.md`, with `Handoff so far:` added; with no such section it is slice 1. Later slices and rounds go to the fresh instance as messages. Before you start it, check that `git status --porcelain` prints nothing, and that `HEAD` is the candidate of the last envelope or handoff section on record (in round 0 with no section, the base). Uncommitted changes, or commits after that candidate, mean the stopped session left work part-way. Ask the user, giving what you found, as for a dirty workspace at intake. Never discard, stash, or commit that work yourself.
 
 ### 4. Checks
 
@@ -344,11 +347,11 @@ Open items
 - Manual checks a later round made invalid and did not repeat, from the handoff
 - Behaviour removed or moved, from the spec checker's list
 - Referrals no verifier examined: the lines under `## Open` in the last round's referrals file
-- Interpretations of ambiguous requirements
+- Interpretations: every entry under "Interpretations" in each verifier's latest report, verbatim, with the verifier's name
 - Discrepancies (checks the implementer reported green that failed)
 
 Fix rounds used: <count> of <cap>   Change rounds: <count>   Polish round: <ran | not run>   Round-0 slices: <m>
-Implementer sessions: <count>, each fresh start with its case from step 3   Implementer size after each round: <values from the log>
+Implementer sessions: <count>, each fresh start with its case from step 3   Implementer size after each slice and round: <values from the log>
 ```
 
 The acceptance table is copied from the spec checker's trace, not rebuilt.
@@ -364,7 +367,7 @@ The acceptance table is copied from the spec checker's trace, not rebuilt.
 | Whether the task is obviously not story-sized (then ask) | Anything a verifier could not verify, once, after the fixes; a conflict between sources, once, before the polish round | Change acceptance criteria; rule on a conflict |
 | Which verifiers a delta round needs, by the roster rules | A workspace changed during verification; an environment command that fails | Mark a run ready without the artifacts; extend the cap; push, merge, or run destructive git commands |
 | Starting the polish round when the setting is `auto` | Which non-blocking findings to fix when the setting is `ask` | Waive a gap, or start a round for non-blocking findings outside the two polish rules |
-| Starting a fresh implementer in one of step 3's three cases | Work a stopped implementer left uncommitted or past its last recorded candidate | Continue the planner or a verifier; start a fresh implementer for any other reason; discard a stopped implementer's work |
+| Starting a fresh implementer in one of step 3's four cases | Work a stopped implementer left uncommitted or past its last recorded candidate | Continue the planner or a verifier; start a fresh implementer for any other reason; discard a stopped implementer's work |
 | Starting and stopping what the plan's "Verification environment" lists | | Replace a failing environment or check command with one of your own; claim a manual check no artifact records |
 
 ## Done when
