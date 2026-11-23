@@ -48,7 +48,7 @@ Two sources that the change cannot both satisfy, such as a drawing's row height 
 
 If one of your answers after the plan gate changes what the candidate must do, such as a ruling between two readings of a criterion, the orchestrator runs a **change round**. It does not count against the fix-round cap, and every verifier reads its result.
 
-With `Polish round: ask` you are asked once, before the close, which of the open Minor and Nit findings to fix; with `auto` every open Minor is fixed without a question, after any conflict between sources is ruled and before you are asked about anything no verifier could check; with `never` they are only listed. The polish round does not count against the cap. After a report you can still ask for named non-blocking findings to be fixed ("fix COR-3 and ARCH-1"). That runs as a normal fix round and counts against the cap.
+With `Polish round: ask` you are asked once, before the close, which of the open Minor and Nit findings to fix; with `auto` every open Minor the implementer has not yet answered is fixed without a question (one it already left with a reason goes to the report with that reason), after any conflict between sources is ruled and before you are asked about anything no verifier could check; with `never` they are only listed. The polish round does not count against the cap. After a report you can still ask for named non-blocking findings to be fixed ("fix COR-3 and ARCH-1"). That runs as a normal fix round and counts against the cap.
 
 ## Outcomes
 

@@ -148,7 +148,7 @@ Do not raise a severity to force a fix, and do not lower one to let a candidate 
 
 In delta mode:
 
-1. Account in "Prior findings" for every blocking finding in your previous report, and for every other finding of yours that has a row in `responses-r<n>.md`: `resolved`, `still open`, `dispute accepted` (withdrawn), or `dispute rejected` (sustained, with the reason). A finding answered `deferred` stays `still open`.
+1. Account in "Prior findings" for every blocking finding in your previous report, and for every other finding of yours that has a row in `responses-r<n>.md`: `resolved`, `still open`, `dispute accepted` (withdrawn), or `dispute rejected` (sustained, with the reason). A finding answered `deferred` or `not changed` stays `still open`. Repeat it in your report as it stands. When you have new evidence that the reason given is wrong, raise a new finding with a new ID that cites the old one and the reason it answers: the old ID counts as answered, and only a new ID reaches the implementer again.
 
    Before you mark a finding `resolved`, look for the same defect elsewhere in the code. A finding names the instance you saw, and a fix can repair that instance alone. The finding's row in `responses-r<n>.md` names the rule the fix enforces, the place that enforces it, and the members it covered. Check that list against the code. Then test the rule with a case the row does not name:
 
